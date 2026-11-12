@@ -1,0 +1,277 @@
+/*! \mainpage COMP 345 Intermediate Project (Team VRW) - Tower Defense: analysis, design and tools
+
+\section overview Overview
+
+The project is a tower defense game made of three parts that work together, plus a thin native Windows graphical driver:
+
+| Part | Folder | Classes | What it does |
+|------|--------|---------|--------------|
+| 1. Map | `Map/` | Map, CellType | Grid of path and scenery cells with one entry and one exit, and a validity check. |
+| 2. Towers | `Towers/` | Tower, BasicTower, SplashTower, SlowTower | Towers that are bought, upgraded, sold and shoot critters. |
+| 3. Critters | `Critters/` | Critter, CritterGroup, CritterGroupGenerator | Waves of critters that walk the path, die for a reward or leak through the exit, steal coins and cost a life. |
+| 4. Graphical driver | `Gui/` | WinGui.cpp | Win32 editor and game view that draws and forwards input without changing the rules. |
+| Observers | `Observer.h`, `Towers/`, `Map/`, `Critters/` | Observer, Observable, TowerObserver, MapObserver, CritterObserver, CritterGroupObserver | Observer pattern: Tower, Map, Critter and CritterGroup are observable, and each view is re-displayed every time its subject changes (see \ref design_observer). |
+
+Every part has its own driver and test program, and `GameDriver.cpp` plays several waves with the three parts together.
+Build and run instructions are in `README.md`.
+
+\section rules Analysis: game rules
+
+\subsection rules_source Where the rules come from
+
+ - **Bloons TD** gives the overall rules: the enemies follow a fixed track from an entry to an exit, towers are placed beside the
+   track, every round is harder than the previous one, the player earns cash for every enemy popped and loses lives when an enemy
+   leaks through the exit, and the enemies of later rounds come in a tighter stream.
+   See the Bloons Wiki pages <a href="https://bloons.fandom.com/wiki/Rounds_(BTD6)">Rounds</a> and
+   <a href="https://bloons.fandom.com/wiki/Lives">Lives</a>. Here the player has 10 lives and loses one for every critter that leaks; the game ends at 0 lives, as the
+   project description says ("the game ends when a certain number of critters are able to reach the end point").
+ - **League of Legends** gives the critters: the lane minions (melee, caster, cannon and super minion) that leave their base one
+   after the other in waves, with stats and gold bounty that grow as the game goes on.
+   See <a href="https://wiki.leagueoflegends.com/en-us/Minion_(League_of_Legends)">League of Legends Wiki: Minion</a>.
+ - The rest comes straight from the project description.
+
+\subsection rules_list Rules implemented
+
+Map
+ -# The map is a grid of any size chosen when it is created. A cell is either PATH or SCENERY.
+ -# Critters walk only on PATH cells, towers stand only on SCENERY cells.
+ -# There is exactly one entry cell and one exit cell, both PATH cells and different from each other.
+ -# The entry and the exit are connected by PATH cells (moving up, down, left or right). Otherwise the map is invalid.
+ -# A map can be saved to a text file and loaded again (`saveToFile`, `loadFromFile`), so the player can choose a saved map to play on.
+
+Towers
+ -# A tower has a buying cost, a refund value, a range, a power (damage) and a rate of fire.
+ -# There are three types that differ in what a shot does: direct damage, area damage and damage plus slowing.
+ -# A tower has levels (1 to 3). Each level is more powerful and has to be paid for. A tower can be sold at any time for a
+    refund that depends on the coins invested in it.
+ -# A working tower detects the critters in its range, selects one and shoots it.
+
+Critters
+ -# A critter has a reward, hit points, strength, speed and level.
+ -# A critter group is made at the start of every wave, every wave is harder than the previous one.
+ -# The critters of a wave enter the map one after the other through the entry.
+ -# A critter knows where the exit is, decides where to move and moves at its speed.
+ -# Every cell holds only one game element: two critters are never on the same path cell (see Movement in the design).
+ -# A critter that reaches zero hit points dies and the player gets coins proportional to its level.
+ -# A critter that reaches the exit steals coins from the player according to its strength.
+ -# A critter that reaches the exit also costs the player one life. The player starts with 10 lives and the game is over
+    (GAME OVER screen, then restart or go back to the editor) when no lives are left.
+
+\section design Design
+
+\subsection design_overview Structure
+
+\verbatim
+   Map  <----------- reads ------------  Critter  <---- owned by ---- CritterGroup <---- creates ---- CritterGroupGenerator
+    ^                                       ^                              |
+    | isSceneryCell (placement rule)        | getRow, getColumn, isAlive   | getActiveCritters()
+    |                                       | takeDamage, applySlow        v
+  GameDriver  ------------------------>  Tower (BasicTower, SplashTower, SlowTower)  <--- update(deltaTime, critters)
+\endverbatim
+
+The three parts only know each other through small interfaces: towers use five functions of Critter, critters use five read-only
+functions of Map (`getRows`, `getColumns`, `getEntry`, `getExit`, `isPathCell`) and neither of them knows about the game loop.
+Coins are always passed as `int&` (`Tower::purchase`, `upgrade`, `sell` and `CritterGroup::update`), so the player's balance
+lives in one variable owned by the game.
+
+\subsection design_loop One game tick
+
+The game loop (see `playWave` in `GameDriver.cpp`) repeats these steps with a small time step (0.1 s):
+ -# every tower gets `update(deltaTime, group.getActiveCritters())`: cooldown goes down, a target is selected and shot if possible;
+ -# `group.update(deltaTime, map, coins)`: spawns the critters whose time has come, moves every critter, adds the reward of the
+    critters killed in step 1 and subtracts the coins stolen by the critters that reached the exit;
+ -# the wave is over when `group.isFinished()` is true. Between waves the player buys, upgrades or sells towers.
+
+Towers shoot first so a critter that is killed is paid in the same tick and is never moved afterwards.
+
+\subsection design_map Part 1: Map
+
+ - The grid is a `vector<vector<CellType>>` that starts as all SCENERY, so a blank map of any size is created with
+   `Map(rows, columns)` (a size that is not positive throws `std::invalid_argument`).
+ - `setCell` changes a cell, `setEntry` and `setExit` store the coordinates and turn that cell into PATH. All of them return `false`
+   for coordinates outside the map. The entry and the exit cannot be the same cell and cannot be turned into SCENERY.
+ - `isValidMap` checks that entry and exit are set, inside the map, different, PATH cells, and connected.
+ - `hasConnectedPath` is a breadth-first search from the entry over PATH cells with four-direction moves.
+ - Read-only accessors (`getRows`, `getColumns`, `getEntry`, `getExit`, `isPathCell`, `isSceneryCell`) let the other parts use the map
+   without being able to change it. `isSceneryCell` is what a game uses to refuse a tower placed on the path.
+ - Choice: the map does not store critters or Tower objects. For the map observer it keeps one letter per cell for the towers
+   standing on it (`placeTower`, `moveTower`, `removeTower`), so a tower can be shown and moved on the map without the Map
+   knowing the Tower class. A tower only stands on free SCENERY, and a cell with a tower cannot become path, entry or exit.
+
+\subsection design_towers Part 2: Towers
+
+`Tower` is an abstract base class. The shared behavior (buying, upgrading, selling, range, cooldown, target selection) lives in
+the base class and each type only provides its own `applyAttack` and `getName`. This is the template method pattern:
+`Tower::update` is always the same and calls the virtual `applyAttack` for the part that changes.
+
+| Type | Cost | Damage | Range | Shots/s | Special |
+|------|-----:|-------:|------:|--------:|---------|
+| BasicTower  | 100 | 20 | 3.0 | 1.0 | direct damage to one critter |
+| SplashTower | 150 | 30 | 2.0 | 0.5 | damages every critter within 1.5 cells of the target |
+| SlowTower   | 125 | 5  | 3.0 | 1.0 | small damage and halves the target's speed for 2 s |
+
+ - **Levels:** maximum level 3. Going up one level costs `cost x current level`, and gives +25% damage (rounded up), +0.5 range and
+   +10% fire rate.
+ - **Refund:** half of all the coins invested (purchase plus upgrades), available at any time with `getRefundValue`.
+ - **Targeting:** among the alive critters inside the range, the one closest to the tower is selected.
+ - **Cooldown:** after a shot the tower waits `1 / fireRate` seconds. A tower that is not bought, or already sold, never shoots.
+ - Choice: the target is chosen by distance because it is simple to explain and test. More rules (first, strongest) would fit in `selectTarget`.
+
+\subsection design_critters Part 3: Critters
+
+Three small classes with one job each.
+
+| Class | Responsibility |
+|-------|----------------|
+| Critter | One critter: stats, shortest path, movement, damage, slow, and one-time `claimReward` / `claimPenalty`. |
+| CritterGroup | One wave: releases the critters one after the other, updates them, settles the coins. |
+| CritterGroupGenerator | Called at the start of a wave, `generate(wave, map)` builds the group. Refuses wave numbers below 1 and invalid maps. |
+
+**Critter types** (stats at level 1, taken from the idea of the lane minions of League of Legends):
+
+| Type | Hit points | Strength | Speed (cells/s) | Reward | Critters in a wave |
+|------|-----------:|---------:|----------------:|-------:|--------------------|
+| Melee  | 30  | 1 | 1.0 | 2  | 3 in every wave |
+| Caster | 20  | 2 | 1.1 | 3  | 3 in every wave |
+| Cannon | 60  | 3 | 0.8 | 5  | wave / 3 (first one in wave 3) |
+| Super  | 120 | 5 | 0.9 | 10 | wave / 10 (first one in wave 10) |
+
+The numbers are our own choices. In the game the cannon minion only appears in some waves, here the extra critters stay in the
+following waves so that no wave is easier than the one before.
+
+**Difficulty:** the level of every critter is the wave number, and from level 1 to level n:
+ - hit points grow 20% of the base value per level;
+ - strength grows by 1 every 3 levels;
+ - speed grows 3% per level, at most +50%;
+ - the reward is `base reward x level` (proportional to the level, as the project description asks);
+ - the time between two critters is 0.8 s in wave 1 and 4% shorter every wave (never below 0.32 s), like the tighter streams of
+   later Bloons TD rounds.
+Because stats only go up and a wave never loses critters, the total hit points of a wave strictly increase (checked for waves 1 to 30).
+
+**Movement:** when a critter spawns it runs a breadth-first search from the entry to the exit (it knows the exit from the map) and keeps
+the shortest path. Each update adds `speed x deltaTime` to its progress and moves it to the next cell of the path every time the
+progress reaches 1, so the speed does not depend on the size of the time step. A critter that reaches the last cell escapes.
+
+**One critter per cell:** the project description says a cell holds only one game element. `CritterGroup::update` gives every critter a function
+that tells whether a cell is taken by another active critter. Before a critter steps onto its next cell it asks that function; if the
+cell is taken it stays at 0.8 of its current cell (right behind the critter in front) and tries again on the next update. Critters
+never pass each other, so the critters are updated front first: the one in front moves and frees its cell for the one behind.
+A new critter is released only when the entry is free, so a critter that is due can be delayed a few ticks behind a slower one. The exit is never
+blocked, because a critter that reaches it leaves the map. A single critter used without a group has no neighbours and walks freely.
+
+**Damage, reward and penalty:**
+ - `takeDamage` lowers the hit points, never below zero, and kills the critter at zero. Only a critter that is on the map can be hit.
+ - `claimReward` returns the reward of a dead critter once, `claimPenalty` returns the strength of an escaped critter once.
+   `CritterGroup::update` calls them every tick, so rewards and penalties can never be counted twice.
+ - A critter that escapes steals as many coins as its strength, and the player never goes below 0 coins.
+ - A slow (`applySlow`) multiplies the speed by a factor for some seconds. A stronger slow replaces a weaker one.
+
+\subsection design_observer Observer pattern (Tower, Map and Critter observers)
+
+\verbatim
+          Observer (interface)                      Observable (subject)
+      + update(Observable*) = 0          1   *   - observers : vector<Observer*>
+      + subjectDestroyed(Observable*)  <-------- + attach(Observer*) / detach(Observer*)
+                 ^                                # notify()   -> calls update(this) on every observer
+                 |                                           ^
+   +-------------+--------------+------------------+         |
+   |             |              |                  |         +----- Tower      (Part 1)
+TowerObserver MapObserver CritterObserver CritterGroupObserver +--- Map        (Part 2)
+   |  observes   |  observes    |  observes        | observes  +--- Critter    (Part 3)
+   v             v              v                  v           +--- CritterGroup (Part 3, add / remove)
+ Tower          Map           Critter          CritterGroup
+\endverbatim
+
+ - `Observer.h` holds the two base classes (header only, so every existing build command still works). `Observable` keeps the
+   list of observers; `notify()` is protected, so only the observed class itself decides when it has changed.
+ - **Pull model:** `update(subject)` only says "I changed"; the view reads the new values from the subject through its getters.
+   The subjects never know how they are displayed, and the views never change the subjects.
+ - **Notify only on real changes.** A refused action (upgrade past level 3, tower moved onto the path, removing a critter that
+   does not exist, hitting a dead critter) and an action that changes nothing (a cell set to the type it already has) do not notify.
+   A critter notifies when it enters a new cell, not on every small step inside a cell, so the view is not redrawn every tick.
+
+| Subject | Changes that call `notify()` | View |
+|---------|------------------------------|------|
+| Tower | `purchase`, `upgrade`, `sell`, `moveTo`, a shot in `update` (cooldown reset) | `TowerObserver`: type, cell, status, level, damage, range, fire rate, cooldown, costs, refund, splash radius or slow |
+| Map | `setCell`, `setEntry`, `setExit`, `placeTower`, `moveTower`, `removeTower`, `loadFromFile` (once) | `MapObserver`: the grid with coordinates, towers, number of towers and whether the map is valid |
+| Critter | `spawn`, entering a new cell, slow wearing off, escaping (all in `update`), `takeDamage`, `applySlow` | `CritterObserver`: type, level, state, cell and step on the path, hit point bar, speed (and slow), strength, reward |
+| CritterGroup | `addCritter`, `removeCritter`, an `update` in which a critter spawns, changes cell, is hit, dies or escapes | `CritterGroupObserver`: one line per critter of the wave, total hit points, spawned, killed, escaped, coins |
+
+**Lifetime and copies** (the classes are copied by value in the existing code: `CritterGroup` holds a `vector<Critter>`, the GUI
+assigns `state.map = Map(...)`, `loadFromFile` does `*this = loaded`):
+ - a copy of an observable starts with no observers, because an observer watches one object, not its values;
+ - an assignment keeps the object's own observers, so a loaded map is still displayed by the same view (`loadFromFile` then notifies once);
+ - each view attaches itself in its constructor and detaches in its destructor; if the subject is destroyed first, it calls
+   `subjectDestroyed` and the view forgets the pointer, so there is never a dangling pointer;
+ - `notify` iterates over a copy of the list, so an observer may detach itself while it is being notified.
+
+**Part 3 (add / remove):** the project's Critter is one critter, and the critters of a wave live in `CritterGroup`. So both are
+observable: `CritterObserver` shows one critter changing, and `CritterGroupObserver` shows critters being added to and removed from
+the wave (`addCritter` adds a WAITING critter at the end of the wave, `removeCritter(index)` also works on a critter that already
+spawned). As with any vector, adding or removing critters invalidates the pointers returned by `getActiveCritters`.
+
+**Display:** the views draw text in the console (or into any `std::ostream`, which the tests use to read what was drawn). The
+assignment lets us choose how the view is displayed; text keeps the drivers portable and testable. Because the views only use the
+observer interface, a graphical view (for example a Win32 panel in `Gui/WinGui.cpp`) can be attached the same way without changing
+Tower, Map or Critter.
+
+**Drivers** (`make observers`):
+ - `tower_observer_driver`: creates a Slow tower, plugs a TowerObserver, then buys, upgrades twice, tries a refused upgrade, moves,
+   shoots a critter and sells it. Every view after the first one is drawn by the observer pattern.
+ - `map_observer_driver`: builds a 7 x 7 map, plugs a MapObserver, then places two towers, moves them (one refused move onto the path),
+   adds a shortcut, moves the exit (the view shows the map becoming invalid), reconnects it and removes a tower.
+ - `critter_observer_driver`: plugs a CritterObserver to a critter that spawns, walks, is hit, slowed and killed; then plugs a
+   CritterGroupObserver to the wave 2 group and adds and removes critters (including a refused removal and a critter already on the map).
+
+\subsection design_choices Other design choices
+
+ - No inheritance for critters: the types only differ in numbers, so one class with a `CritterType` is enough.
+ - Time is passed in seconds to every `update`, so a console loop, or a GUI later, decides how often things are updated.
+ - Critters keep their own copy of the path instead of a pointer to the map, so they cannot be left pointing at a deleted map.
+ - Tests and drivers use only the public interface of each class.
+
+\section tools Tools and libraries
+
+| Choice | Why |
+|--------|-----|
+| C++17 with g++ | Required language, g++ is available in the labs, and C++17 gives `inline` variables and `make_unique`. |
+| Standard library only (`vector`, `queue`, `memory`, `cmath`, `algorithm`, `iostream`) for the other drivers | Nothing to install for the console build, so the marker can compile it anywhere. |
+| Win32/GDI for the graphical driver | No extra GUI library is needed on Windows, the API ships with the MinGW toolchain, the only GUI code lives in `Gui/WinGui.cpp`, the game classes do not know Win32, and `make gui` is separate so the rest builds without it. |
+| Console output for the other drivers | Simple and portable. The map is drawn with characters (E entry, X exit, . path, # scenery, B/P/L towers, M/C/N/S critters). |
+| Makefile plus plain g++ commands | One command builds everything, and the commands are also listed for computers without make. |
+| Own `check` helper in `TestHelper.h` | A testing framework would be one more thing to install, and the tests are small. |
+| Doxygen | The documentation is made from the `///` comments and this page. |
+
+\section testing Testing
+
+Each part has a test program that prints PASS or FAIL for every check and returns a non-zero exit code if one fails (`make test`).
+
+| Program | Checks | What it covers |
+|---------|-------:|----------------|
+| `map_tests` | 28 | Blank maps and sizes, setting cells, entry and exit rules, valid and invalid maps (no exit, gap in the path, diagonal-only link), saving a map to a file and loading it back, a missing file keeps the old map. |
+| `tower_tests` | 24 | Buying, upgrading to the maximum level, refund, selling, range, closest target, cooldown, splash radius, slowing, kills. |
+| `observer_tests` | 63 | Observable base (attach twice, detach, copies, assignment, self-detach, subject destroyed), and for each of Tower, Map, Critter and CritterGroup: every change re-displays the view, refused or unchanged actions do not, what the view shows, tower placement rules on the map, adding and removing critters. |
+| `critter_tests` | 60 | Stats and reward proportional to the level, damage and death, movement and shortest path with a dead end, slow, wave composition and difficulty from wave 1 to 30, sequential spawning, one critter per cell (waiting behind a blocked cell, queueing behind a slower critter, no spawn on an occupied entry), rewards paid once, coins stolen, coins never below 0. |
+
+The drivers show the same behavior on screen: `map_driver`, `tower_driver` (buy, upgrade, sell and shoot), `critter_driver`
+(generated waves, critters walking, rewards and stolen coins) and `game_driver` (all parts together over 10 waves).
+\section gui Graphical driver
+
+The Win32 graphical driver is a thin layer on top of the same rules used by the console drivers. It does not change the game logic.
+
+ - **Edit mode:** choose Path, Scenery, Entry or Exit, then click or drag on the grid. Rows and columns are chosen separately and can be resized between 3 and 40, so rectangular maps such as 5 x 30 or 10 x 10 are possible. The "Size step" button makes Rows and Cols change by 1, 5 or 10 at a time. Resizing keeps the path cells, the entry and the exit that still fit. The cell size is computed from the map size (the biggest square cell that fits the map area), and the labels, tower letters and level dots are only drawn when they fit in the cell. Blank map and Sample map are shortcuts for the current size or for the 7x7 map used in `GameDriver.cpp`.
+ - **Play mode:** buy towers on scenery cells, select a tower to see its stats and buttons, start waves, pause or resume the fixed-step simulation, and switch back to the editor when no wave is running.
+ - **Resizing:** the interface is laid out on a fixed 1100 x 720 design area. The window can be resized freely (down to 640 x 440): the
+   whole design area is scaled by one factor (the smaller of width / 1100 and height / 720) with a GDI world transform and centered,
+   so the map, panel, buttons and texts grow and shrink together and nothing is stretched or cut off. Mouse positions are converted
+   back to design coordinates (`toDesignPoint`), so clicks, hover and hit tests do not depend on the window size.
+ - **Simulation:** time is advanced with a fixed 0.05 s step and an accumulator. Towers shoot first, then critters move and settle rewards and penalties, so the GUI stays consistent with the console driver.
+
+\section limits Known limitations
+
+ - The observer views are console (text) views. The Win32 graphical driver does not use them yet.
+ - The graphical interface is only a thin layer. The only additions to the game classes are the read-only accessors needed for drawing: `Critter::getExactPosition`, `Tower::getUpgradeCost` and `Tower::getMaxLevel`.
+ - Critters follow one fixed path, there is no reaction to towers.
+ - Bloons TD features such as layered bloons or end-of-round cash are not used.
+ - Game balance (costs, damage, rewards) has not been tuned beyond making the waves get harder.
+*/

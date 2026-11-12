@@ -1,0 +1,5 @@
+PROJECT_NAME = "COMP 345 Intermediate Project - Team VRW"
+INPUT = Report.dox Observer.h Map Towers Critters
+RECURSIVE = YES
+EXTRACT_ALL = YES
+GENERATE_LATEX = NO
