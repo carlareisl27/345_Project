@@ -1,9 +1,11 @@
+// Tests of Part 1 (map): creation, cells, entry and exit, validity of the path, saving and loading a map file.
 #include "Map.h"
 #include "TestHelper.h"
 
 #include <cstdio> // std::remove, used to delete the test file
 #include <stdexcept>
 
+// a 5 x 5 map with a path from the entry (0, 0) to the exit (3, 4)
 static Map makeValidMap() {
     Map map(5, 5);
     map.setEntry(0, 0);

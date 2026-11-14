@@ -1,12 +1,12 @@
 var searchData=
 [
-  ['part_201_3a_20map_0',['Part 1: Map',['../index.html#design_map',1,'']]],
-  ['part_202_3a_20towers_1',['Part 2: Towers',['../index.html#design_towers',1,'']]],
-  ['part_203_3a_20critters_2',['Part 3: Critters',['../index.html#design_critters',1,'']]],
-  ['path_3',['PATH',['../_map_8h.html#a268ae74e98bc01a0e35f5e215580bcb4a5ffb5f0d0de78321df46fc7c93ca64a3',1,'Map.h']]],
-  ['playwave_4',['playWave',['../_critter_driver_8cpp.html#af2044a1c155108f3548f9d651b3de1e4',1,'CritterDriver.cpp']]],
-  ['printwave_5',['printWave',['../_critter_driver_8cpp.html#aa262f6d735fcc8250790317f196841cf',1,'CritterDriver.cpp']]],
-  ['project_20team_20vrw_20tower_20defense_3a_20analysis_20design_20and_20tools_6',['COMP 345 Intermediate Project (Team VRW) - Tower Defense: analysis, design and tools',['../index.html',1,'']]],
-  ['purchase_7',['purchase',['../class_tower.html#ac15362bcc37e1246edf4bca5c7057667',1,'Tower']]],
-  ['purchased_8',['purchased',['../class_tower.html#a2a08a5e5705443e245f49508338e2a89',1,'Tower']]]
+  ['observable_0',['Observable',['../class_observable.html',1,'Observable'],['../class_observable.html#ab3559b2daa90b06b123089508b3d193d',1,'Observable::Observable()=default'],['../class_observable.html#a9a6665a6ccc4f4a2b4b6392ec75aa39b',1,'Observable::Observable(const Observable &amp;)']]],
+  ['observer_1',['Observer',['../class_observer.html',1,'']]],
+  ['observer_20pattern_20tower_20map_20and_20critter_20observers_2',['Observer pattern (Tower, Map and Critter observers)',['../index.html#design_observer',1,'']]],
+  ['observer_2eh_3',['Observer.h',['../_observer_8h.html',1,'']]],
+  ['observers_4',['Observer pattern (Tower, Map and Critter observers)',['../index.html#design_observer',1,'']]],
+  ['one_20game_20tick_5',['One game tick',['../index.html#design_loop',1,'']]],
+  ['operator_3d_6',['operator=',['../class_observable.html#ac45601743e09ed03383a15bd71dfadae',1,'Observable::operator=()'],['../class_map_observer.html#a87d5f495f6952af564df3f94c8d2c63c',1,'MapObserver::operator=()'],['../class_tower.html#ac87c6f3a789bec4dc588440aabbb855f',1,'Tower::operator=()'],['../class_tower_observer.html#ac0841bfae502031f10bd30979fd0b203',1,'TowerObserver::operator=()'],['../class_critter_observer.html#a326859370796eb9519b6fd0e1e32030d',1,'CritterObserver::operator=()'],['../class_critter_group_observer.html#aa6b4317319681a28334f836063d9d4c8',1,'CritterGroupObserver::operator=()']]],
+  ['other_20design_20choices_7',['Other design choices',['../index.html#design_choices',1,'']]],
+  ['overview_8',['Overview',['../index.html#overview',1,'']]]
 ];

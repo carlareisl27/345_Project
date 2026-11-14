@@ -1,3 +1,5 @@
+// Part 3 (critters): builds the critter wave for a wave number. StandardCritterFactory (Factory pattern) uses the
+// same rules, so the waves of Assignment 2 and Assignment 3 are identical.
 #include "CritterGroupGenerator.h"
 #include "Map.h"
 
@@ -10,6 +12,7 @@ CritterGroupGenerator::CritterGroupGenerator(double spawnInterval)
     }
 }
 
+// later waves come in a tighter stream: 4% less time between two critters per wave, never below 40%
 double CritterGroupGenerator::getSpawnInterval(int waveNumber) const {
     double factor = 1.0 - 0.04 * (waveNumber - 1);
 
@@ -20,6 +23,7 @@ double CritterGroupGenerator::getSpawnInterval(int waveNumber) const {
     return spawnInterval * factor;
 }
 
+// 3 melee and 3 caster in every wave, one more cannon every 3 waves, one more super critter every 10 waves
 int CritterGroupGenerator::countOfType(CritterType type, int waveNumber) {
     switch (type) {
         case CritterType::MELEE: return 3;
@@ -30,6 +34,7 @@ int CritterGroupGenerator::countOfType(CritterType type, int waveNumber) {
     return 0;
 }
 
+// all critters of a wave have the wave's level, so their hit points and rewards grow with the wave number
 CritterGroup CritterGroupGenerator::generate(int waveNumber, const Map& map) const {
     if (waveNumber < 1) {
         throw std::invalid_argument("The wave number must be at least 1.");

@@ -2,7 +2,12 @@
 #include "Tower.h"
 #include "Critter.h"
 #include "CritterGroup.h"
-#include "CritterGroupGenerator.h"
+#include "CritterFactory.h"
+#include "StandardCritterFactory.h"
+#include "NearestToExitStrategy.h"
+#include "StrongestCritterStrategy.h"
+#include "TowerDecorator.h"
+#include "TowerUpgrades.h"
 
 #include <iomanip>
 #include <iostream>
@@ -12,6 +17,27 @@
 // Integrated driver: Part 1 (map), Part 2 (towers) and Part 3 (critters) working together.
 // The player buys towers on scenery cells, then plays waves. Towers shoot the critters, kills give coins,
 // critters that reach the exit steal coins, and between waves the player upgrades towers with the coins left.
+//
+// Assignment 3 patterns used by the game:
+// - Strategy: each tower has a targeting strategy (the splash tower aims at the strongest critter, the slow tower at
+//   the critter closest to the exit, the basic tower at the nearest critter).
+// - Factory: every wave is created by a CritterFactory, which makes later waves larger and stronger.
+// - Decorator: every upgrade wraps the tower in a decorator: a LevelUpDecorator per level, then, at the maximum level,
+//   one special upgrade (Burning, Freezing or Splash).
+
+// Decorator pattern: a tower at its maximum level buys the special upgrade that fits its kind, through the helpers of
+// TowerUpgrades.h (each one checks the price, takes the coins and wraps the tower in the decorator). The unique_ptr then
+// owns the decorator, which owns the original tower. False if the upgrade is already there or too expensive.
+bool addSpecialUpgrade(std::unique_ptr<Tower>& tower, int& coins) {
+    const Tower& base = baseTower(*tower);
+    if (dynamic_cast<const BasicTower*>(&base) != nullptr) {
+        return addBurning(tower, coins);  // the basic tower sets its target on fire
+    }
+    if (dynamic_cast<const SplashTower*>(&base) != nullptr) {
+        return addFreezing(tower, coins); // the splash tower slows the whole group it hits
+    }
+    return addSplash(tower, coins);       // the slow tower slows its target and damages the critters around it
+}
 
 // a tower can only be bought if it stands on a scenery cell and the player can pay for it.
 bool buyTower(const Map& map, Tower& tower, int& coins) {
@@ -78,15 +104,24 @@ void playWave(const Map& map, CritterGroup& group, std::vector<std::unique_ptr<T
               << group.getEscapedCount() << " escaped (-" << group.getCoinsStolen() << " coins), coins now " << coins << '\n';
 }
 
-// between waves the player first buys the towers it could not afford before, then upgrades with the coins left.
+// between waves the player first buys the towers it could not afford before, then buys the special upgrade of towers
+// already at their maximum level, then upgrades with the coins left.
 void spendCoins(const Map& map, std::vector<std::unique_ptr<Tower>>& towers, int& coins) {
     for (auto& tower : towers) {
         if (!tower->isPurchased() && !tower->isSold() && map.isSceneryCell(tower->getRow(), tower->getColumn()) && tower->purchase(coins)) {
             std::cout << "  bought " << tower->getName() << " at (" << tower->getRow() << ", " << tower->getColumn() << "), coins left: " << coins << '\n';
         }
     }
+    // a tower already at its maximum level gets its special upgrade first (Decorator pattern)
     for (auto& tower : towers) {
-        if (tower->isPurchased() && tower->upgrade(coins)) {
+        if (tower->isPurchased() && tower->getLevel() == tower->getMaxLevel() && addSpecialUpgrade(tower, coins)) {
+            std::cout << "  special upgrade: now " << tower->getName() << " (damage " << tower->getDamage() << ", range "
+                      << tower->getRange() << "), coins left: " << coins << '\n';
+        }
+    }
+    // Level Up (Decorator pattern): each upgrade wraps the tower in one more LevelUpDecorator
+    for (auto& tower : towers) {
+        if (tower->isPurchased() && levelUp(tower, coins)) {
             std::cout << "  upgraded " << tower->getName() << " to level " << tower->getLevel() << ", coins left: " << coins << '\n';
         }
     }
@@ -114,15 +149,21 @@ int main() {
     towers.push_back(std::make_unique<SplashTower>(3, 4));
     towers.push_back(std::make_unique<SlowTower>(1, 3));
 
+    // Strategy pattern: each tower gets the targeting that suits it (the basic tower keeps the default, nearest critter)
+    towers[2]->setTargetingStrategy(std::make_unique<StrongestCritterStrategy>()); // splash where the toughest critter is
+    towers[3]->setTargetingStrategy(std::make_unique<NearestToExitStrategy>());    // slow the critter about to escape
+
     std::cout << "Buying towers with " << coins << " coins:\n";
     for (auto& tower : towers) {
         buyTower(map, *tower, coins);
     }
     std::cout << '\n';
 
-    CritterGroupGenerator generator;
+    // Factory pattern: the game only knows the CritterFactory interface
+    StandardCritterFactory standardWaves;
+    const CritterFactory& waveFactory = standardWaves;
     for (int wave = 1; wave <= 10; wave++) {
-        CritterGroup group = generator.generate(wave, map);
+        CritterGroup group = waveFactory.createGroup(wave, map);
         playWave(map, group, towers, coins, wave == 3);
 
         if (wave < 10) {

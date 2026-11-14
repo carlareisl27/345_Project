@@ -119,9 +119,17 @@ Inheritance diagram for Tower:</div>
  <div class="center">
   <img src="class_tower.png" usemap="#Tower_map" alt=""/>
   <map id="Tower_map" name="Tower_map">
-<area href="class_basic_tower.html" alt="BasicTower" shape="rect" coords="0,56,85,80"/>
-<area href="class_slow_tower.html" alt="SlowTower" shape="rect" coords="95,56,180,80"/>
-<area href="class_splash_tower.html" alt="SplashTower" shape="rect" coords="190,56,275,80"/>
+<area href="class_observable.html" alt="Observable" shape="rect" coords="193,0,312,24"/>
+<area href="class_basic_tower.html" alt="BasicTower" shape="rect" coords="0,112,119,136"/>
+<area href="class_slow_tower.html" alt="SlowTower" shape="rect" coords="129,112,248,136"/>
+<area href="class_splash_tower.html" alt="SplashTower" shape="rect" coords="258,112,377,136"/>
+<area href="class_tower_decorator.html" alt="TowerDecorator" shape="rect" coords="387,112,506,136"/>
+<area href="class_counted_tower.html" alt="CountedTower" shape="rect" coords="0,168,119,192"/>
+<area href="class_burning_decorator.html" alt="BurningDecorator" shape="rect" coords="129,168,248,192"/>
+<area href="class_freezing_decorator.html" alt="FreezingDecorator" shape="rect" coords="258,168,377,192"/>
+<area href="class_level_up_decorator.html" alt="LevelUpDecorator" shape="rect" coords="387,168,506,192"/>
+<area href="class_plain_decorator.html" alt="PlainDecorator" shape="rect" coords="516,168,635,192"/>
+<area href="class_splash_decorator.html" alt="SplashDecorator" shape="rect" coords="645,168,764,192"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -129,32 +137,51 @@ Inheritance diagram for Tower:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a2eefbd53ad54cbcc2662bd90a39885c5" id="r_a2eefbd53ad54cbcc2662bd90a39885c5"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a2eefbd53ad54cbcc2662bd90a39885c5">Tower</a> (int row, int column, int cost, int damage, double range, double fireRate)</td></tr>
 <tr class="memitem:ae678957ff7b082fad163328adb886715" id="r_ae678957ff7b082fad163328adb886715"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="#ae678957ff7b082fad163328adb886715">~Tower</a> ()=default</td></tr>
-<tr class="memitem:ac15362bcc37e1246edf4bca5c7057667" id="r_ac15362bcc37e1246edf4bca5c7057667"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ac15362bcc37e1246edf4bca5c7057667">purchase</a> (int &amp;coins)</td></tr>
-<tr class="memitem:a190d933f538688d5260b37c9a2130e41" id="r_a190d933f538688d5260b37c9a2130e41"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a190d933f538688d5260b37c9a2130e41">upgrade</a> (int &amp;coins)</td></tr>
-<tr class="memitem:a6d9dd009b3f034c491813267ab01e73d" id="r_a6d9dd009b3f034c491813267ab01e73d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a6d9dd009b3f034c491813267ab01e73d">sell</a> (int &amp;coins)</td></tr>
-<tr class="memitem:ab4a64c3cd408375af75e75254ffd7e35" id="r_ab4a64c3cd408375af75e75254ffd7e35"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ab4a64c3cd408375af75e75254ffd7e35">isInRange</a> (int targetRow, int targetColumn) const</td></tr>
-<tr class="memitem:af991d5f4db2b1d74714a566b719c483a" id="r_af991d5f4db2b1d74714a566b719c483a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af991d5f4db2b1d74714a566b719c483a">update</a> (double deltaTime, const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;critters)</td></tr>
-<tr class="memitem:a4d24c38eca35b1414a78bf50fe5f3703" id="r_a4d24c38eca35b1414a78bf50fe5f3703"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a4d24c38eca35b1414a78bf50fe5f3703">getRow</a> () const</td></tr>
-<tr class="memitem:ad862ab35527e9c57bd32e92a09079bfd" id="r_ad862ab35527e9c57bd32e92a09079bfd"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ad862ab35527e9c57bd32e92a09079bfd">getColumn</a> () const</td></tr>
-<tr class="memitem:a946bb7cafe9ac96212e6e300b782d6c6" id="r_a946bb7cafe9ac96212e6e300b782d6c6"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a946bb7cafe9ac96212e6e300b782d6c6">getDamage</a> () const</td></tr>
-<tr class="memitem:a4a69796c3c65aeae2d42ef631d69eb6c" id="r_a4a69796c3c65aeae2d42ef631d69eb6c"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a4a69796c3c65aeae2d42ef631d69eb6c">getLevel</a> () const</td></tr>
-<tr class="memitem:a0e003f2b4fd235ac335db4803b1d3e4b" id="r_a0e003f2b4fd235ac335db4803b1d3e4b"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a0e003f2b4fd235ac335db4803b1d3e4b">getCost</a> () const</td></tr>
-<tr class="memitem:a23cb2767edb7c472480420fc75d3ac77" id="r_a23cb2767edb7c472480420fc75d3ac77"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a23cb2767edb7c472480420fc75d3ac77">getUpgradeCost</a> () const</td></tr>
+<tr class="memitem:ae388197b793e320230ad920f88d28ac4" id="r_ae388197b793e320230ad920f88d28ac4"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae388197b793e320230ad920f88d28ac4">Tower</a> (const <a class="el" href="class_tower.html">Tower</a> &amp;)=delete</td></tr>
+<tr class="memitem:ac87c6f3a789bec4dc588440aabbb855f" id="r_ac87c6f3a789bec4dc588440aabbb855f"><td class="memItemLeft"><a class="el" href="class_tower.html">Tower</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ac87c6f3a789bec4dc588440aabbb855f">operator=</a> (const <a class="el" href="class_tower.html">Tower</a> &amp;)=delete</td></tr>
+<tr class="memitem:ac15362bcc37e1246edf4bca5c7057667" id="r_ac15362bcc37e1246edf4bca5c7057667"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#ac15362bcc37e1246edf4bca5c7057667">purchase</a> (int &amp;coins)</td></tr>
+<tr class="memitem:a190d933f538688d5260b37c9a2130e41" id="r_a190d933f538688d5260b37c9a2130e41"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#a190d933f538688d5260b37c9a2130e41">upgrade</a> (int &amp;coins)</td></tr>
+<tr class="memitem:a6d9dd009b3f034c491813267ab01e73d" id="r_a6d9dd009b3f034c491813267ab01e73d"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#a6d9dd009b3f034c491813267ab01e73d">sell</a> (int &amp;coins)</td></tr>
+<tr class="memitem:a8154eb57c7ae84d5e69a719ababbbfb5" id="r_a8154eb57c7ae84d5e69a719ababbbfb5"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#a8154eb57c7ae84d5e69a719ababbbfb5">moveTo</a> (int newRow, int newColumn)</td></tr>
+<tr class="memitem:ab4a64c3cd408375af75e75254ffd7e35" id="r_ab4a64c3cd408375af75e75254ffd7e35"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#ab4a64c3cd408375af75e75254ffd7e35">isInRange</a> (int targetRow, int targetColumn) const</td></tr>
+<tr class="memitem:af991d5f4db2b1d74714a566b719c483a" id="r_af991d5f4db2b1d74714a566b719c483a"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#af991d5f4db2b1d74714a566b719c483a">update</a> (double deltaTime, const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;critters)</td></tr>
+<tr class="memitem:aef67059f3a6434f908b485bdf2fbfb4d" id="r_aef67059f3a6434f908b485bdf2fbfb4d"><td class="memItemLeft">virtual void&#160;</td><td class="memItemRight"><a class="el" href="#aef67059f3a6434f908b485bdf2fbfb4d">setTargetingStrategy</a> (std::unique_ptr&lt; <a class="el" href="class_targeting_strategy.html">TargetingStrategy</a> &gt; strategy)</td></tr>
+<tr class="memitem:a733315f0069c822d6cb95329b9e79091" id="r_a733315f0069c822d6cb95329b9e79091"><td class="memItemLeft">virtual const <a class="el" href="class_targeting_strategy.html">TargetingStrategy</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a733315f0069c822d6cb95329b9e79091">getTargetingStrategy</a> () const</td></tr>
+<tr class="memdesc:a733315f0069c822d6cb95329b9e79091"><td class="mdescLeft">&#160;</td><td class="mdescRight">The targeting strategy used now (never null). A decorated tower returns the strategy of the tower it wraps.  <br /></td></tr>
+<tr class="memitem:aa3e2deed7e717e09b3140937451a218b" id="r_aa3e2deed7e717e09b3140937451a218b"><td class="memItemLeft"><a class="el" href="class_critter.html">Critter</a> *&#160;</td><td class="memItemRight"><a class="el" href="#aa3e2deed7e717e09b3140937451a218b">selectTarget</a> (const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;critters) const</td></tr>
+<tr class="memitem:a4d24c38eca35b1414a78bf50fe5f3703" id="r_a4d24c38eca35b1414a78bf50fe5f3703"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#a4d24c38eca35b1414a78bf50fe5f3703">getRow</a> () const</td></tr>
+<tr class="memitem:ad862ab35527e9c57bd32e92a09079bfd" id="r_ad862ab35527e9c57bd32e92a09079bfd"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#ad862ab35527e9c57bd32e92a09079bfd">getColumn</a> () const</td></tr>
+<tr class="memitem:a946bb7cafe9ac96212e6e300b782d6c6" id="r_a946bb7cafe9ac96212e6e300b782d6c6"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#a946bb7cafe9ac96212e6e300b782d6c6">getDamage</a> () const</td></tr>
+<tr class="memitem:a4a69796c3c65aeae2d42ef631d69eb6c" id="r_a4a69796c3c65aeae2d42ef631d69eb6c"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#a4a69796c3c65aeae2d42ef631d69eb6c">getLevel</a> () const</td></tr>
+<tr class="memitem:a0e003f2b4fd235ac335db4803b1d3e4b" id="r_a0e003f2b4fd235ac335db4803b1d3e4b"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#a0e003f2b4fd235ac335db4803b1d3e4b">getCost</a> () const</td></tr>
+<tr class="memitem:a23cb2767edb7c472480420fc75d3ac77" id="r_a23cb2767edb7c472480420fc75d3ac77"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#a23cb2767edb7c472480420fc75d3ac77">getUpgradeCost</a> () const</td></tr>
 <tr class="memdesc:a23cb2767edb7c472480420fc75d3ac77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upgrade cost for the current level, or 0 if the tower cannot be upgraded now.  <br /></td></tr>
-<tr class="memitem:af3a4bdcb17b767a4036d71671a341366" id="r_af3a4bdcb17b767a4036d71671a341366"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#af3a4bdcb17b767a4036d71671a341366">getMaxLevel</a> () const</td></tr>
+<tr class="memitem:af3a4bdcb17b767a4036d71671a341366" id="r_af3a4bdcb17b767a4036d71671a341366"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#af3a4bdcb17b767a4036d71671a341366">getMaxLevel</a> () const</td></tr>
 <tr class="memdesc:af3a4bdcb17b767a4036d71671a341366"><td class="mdescLeft">&#160;</td><td class="mdescRight">Highest level this tower can reach.  <br /></td></tr>
-<tr class="memitem:a01dffb67be8f538c6567019a1617a749" id="r_a01dffb67be8f538c6567019a1617a749"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a01dffb67be8f538c6567019a1617a749">getRefundValue</a> () const</td></tr>
-<tr class="memitem:a703e8dff95cd8995db19479703dfc353" id="r_a703e8dff95cd8995db19479703dfc353"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a703e8dff95cd8995db19479703dfc353">getRange</a> () const</td></tr>
-<tr class="memitem:a7b804f7a98be259cb696ec9b2667c410" id="r_a7b804f7a98be259cb696ec9b2667c410"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a7b804f7a98be259cb696ec9b2667c410">getFireRate</a> () const</td></tr>
-<tr class="memitem:a858da56be75777a8688c0d88bbb13bae" id="r_a858da56be75777a8688c0d88bbb13bae"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a858da56be75777a8688c0d88bbb13bae">isPurchased</a> () const</td></tr>
-<tr class="memitem:a582e83ab40fdc968b923a635e21eea31" id="r_a582e83ab40fdc968b923a635e21eea31"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a582e83ab40fdc968b923a635e21eea31">isSold</a> () const</td></tr>
+<tr class="memitem:a01dffb67be8f538c6567019a1617a749" id="r_a01dffb67be8f538c6567019a1617a749"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="#a01dffb67be8f538c6567019a1617a749">getRefundValue</a> () const</td></tr>
+<tr class="memitem:a703e8dff95cd8995db19479703dfc353" id="r_a703e8dff95cd8995db19479703dfc353"><td class="memItemLeft">virtual double&#160;</td><td class="memItemRight"><a class="el" href="#a703e8dff95cd8995db19479703dfc353">getRange</a> () const</td></tr>
+<tr class="memitem:a7b804f7a98be259cb696ec9b2667c410" id="r_a7b804f7a98be259cb696ec9b2667c410"><td class="memItemLeft">virtual double&#160;</td><td class="memItemRight"><a class="el" href="#a7b804f7a98be259cb696ec9b2667c410">getFireRate</a> () const</td></tr>
+<tr class="memitem:a858da56be75777a8688c0d88bbb13bae" id="r_a858da56be75777a8688c0d88bbb13bae"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#a858da56be75777a8688c0d88bbb13bae">isPurchased</a> () const</td></tr>
+<tr class="memitem:a582e83ab40fdc968b923a635e21eea31" id="r_a582e83ab40fdc968b923a635e21eea31"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#a582e83ab40fdc968b923a635e21eea31">isSold</a> () const</td></tr>
+<tr class="memitem:ac10fa594c2ab1560797f2b5f968fc690" id="r_ac10fa594c2ab1560797f2b5f968fc690"><td class="memItemLeft">virtual double&#160;</td><td class="memItemRight"><a class="el" href="#ac10fa594c2ab1560797f2b5f968fc690">getCooldown</a> () const</td></tr>
 <tr class="memitem:adfa81f74dcc762520d5385dcf72b5d84" id="r_adfa81f74dcc762520d5385dcf72b5d84"><td class="memItemLeft">virtual const char *&#160;</td><td class="memItemRight"><a class="el" href="#adfa81f74dcc762520d5385dcf72b5d84">getName</a> () const =0</td></tr>
+<tr class="inherit_header pub_methods_class_observable"><td colspan="2">Public Member Functions inherited from <a class="el" href="class_observable.html">Observable</a></td></tr>
+<tr class="memitem:ab3559b2daa90b06b123089508b3d193d pub_methods_class_observable" id="r_ab3559b2daa90b06b123089508b3d193d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#ab3559b2daa90b06b123089508b3d193d">Observable</a> ()=default</td></tr>
+<tr class="memitem:a9a6665a6ccc4f4a2b4b6392ec75aa39b pub_methods_class_observable" id="r_a9a6665a6ccc4f4a2b4b6392ec75aa39b"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a9a6665a6ccc4f4a2b4b6392ec75aa39b">Observable</a> (const <a class="el" href="class_observable.html">Observable</a> &amp;)</td></tr>
+<tr class="memitem:ac45601743e09ed03383a15bd71dfadae pub_methods_class_observable" id="r_ac45601743e09ed03383a15bd71dfadae"><td class="memItemLeft"><a class="el" href="class_observable.html">Observable</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#ac45601743e09ed03383a15bd71dfadae">operator=</a> (const <a class="el" href="class_observable.html">Observable</a> &amp;)</td></tr>
+<tr class="memitem:a42f551d4d64ffa48a2ea8d7f0a4e42d4 pub_methods_class_observable" id="r_a42f551d4d64ffa48a2ea8d7f0a4e42d4"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a42f551d4d64ffa48a2ea8d7f0a4e42d4">~Observable</a> ()</td></tr>
+<tr class="memitem:a6efa28f8d9b8e5ab249533f684363a4f pub_methods_class_observable" id="r_a6efa28f8d9b8e5ab249533f684363a4f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a6efa28f8d9b8e5ab249533f684363a4f">attach</a> (<a class="el" href="class_observer.html">Observer</a> *observer)</td></tr>
+<tr class="memitem:a242e67bc26e3934370e863af3c08d1cb pub_methods_class_observable" id="r_a242e67bc26e3934370e863af3c08d1cb"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a242e67bc26e3934370e863af3c08d1cb">detach</a> (<a class="el" href="class_observer.html">Observer</a> *observer)</td></tr>
+<tr class="memitem:afabfe1c5f50b045bfa886f23aabe96c9 pub_methods_class_observable" id="r_afabfe1c5f50b045bfa886f23aabe96c9"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#afabfe1c5f50b045bfa886f23aabe96c9">getObserverCount</a> () const</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:aef2b8a4aaa9759278fb71394e27aad9e" id="r_aef2b8a4aaa9759278fb71394e27aad9e"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#aef2b8a4aaa9759278fb71394e27aad9e">updateCost</a> () const</td></tr>
-<tr class="memitem:aa3e2deed7e717e09b3140937451a218b" id="r_aa3e2deed7e717e09b3140937451a218b"><td class="memItemLeft"><a class="el" href="class_critter.html">Critter</a> *&#160;</td><td class="memItemRight"><a class="el" href="#aa3e2deed7e717e09b3140937451a218b">selectTarget</a> (const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;critters) const</td></tr>
+<tr class="memitem:af591d5c35247cda44d1ea134736f1f0e" id="r_af591d5c35247cda44d1ea134736f1f0e"><td class="memItemLeft">virtual <a class="el" href="class_critter.html">Critter</a> *&#160;</td><td class="memItemRight"><a class="el" href="#af591d5c35247cda44d1ea134736f1f0e">selectTargetFor</a> (const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;critters, const <a class="el" href="class_tower.html">Tower</a> &amp;rangeOwner) const</td></tr>
+<tr class="memitem:a75abf77123d9e8e22602ad19c69e07b9" id="r_a75abf77123d9e8e22602ad19c69e07b9"><td class="memItemLeft">virtual bool&#160;</td><td class="memItemRight"><a class="el" href="#a75abf77123d9e8e22602ad19c69e07b9">performUpdate</a> (double deltaTime, const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;critters, <a class="el" href="class_tower.html">Tower</a> &amp;attacker)</td></tr>
 <tr class="memitem:ae8d2ddd4efce3b80ba02c46994577814" id="r_ae8d2ddd4efce3b80ba02c46994577814"><td class="memItemLeft">virtual void&#160;</td><td class="memItemRight"><a class="el" href="#ae8d2ddd4efce3b80ba02c46994577814">applyAttack</a> (<a class="el" href="class_critter.html">Critter</a> *target, const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;critters)=0</td></tr>
+<tr class="inherit_header pro_methods_class_observable"><td colspan="2">Protected Member Functions inherited from <a class="el" href="class_observable.html">Observable</a></td></tr>
+<tr class="memitem:a099bf851e05bb8c1a25e83f2a1389e58 pro_methods_class_observable" id="r_a099bf851e05bb8c1a25e83f2a1389e58"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a099bf851e05bb8c1a25e83f2a1389e58">notify</a> ()</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-attribs" class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -170,10 +197,15 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:afa6fc94e72ef1f3d75b7de9b2ef5abf5" id="r_afa6fc94e72ef1f3d75b7de9b2ef5abf5"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#afa6fc94e72ef1f3d75b7de9b2ef5abf5">cooldown</a></td></tr>
 <tr class="memitem:a2a08a5e5705443e245f49508338e2a89" id="r_a2a08a5e5705443e245f49508338e2a89"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a2a08a5e5705443e245f49508338e2a89">purchased</a></td></tr>
 <tr class="memitem:a896fc2a46bae9b95a344780a2493f7ec" id="r_a896fc2a46bae9b95a344780a2493f7ec"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a896fc2a46bae9b95a344780a2493f7ec">sold</a></td></tr>
+<tr class="memitem:a780aeb427d29422a350a48812559cc1d" id="r_a780aeb427d29422a350a48812559cc1d"><td class="memItemLeft">std::unique_ptr&lt; <a class="el" href="class_targeting_strategy.html">TargetingStrategy</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a780aeb427d29422a350a48812559cc1d">targetingStrategy</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a519851697fe58c3dd77ed0c736176993" id="r_a519851697fe58c3dd77ed0c736176993"><td class="memItemLeft">class&#160;</td><td class="memItemRight"><a class="el" href="#a519851697fe58c3dd77ed0c736176993">TowerDecorator</a></td></tr>
 </table>
 <a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a2eefbd53ad54cbcc2662bd90a39885c5" name="a2eefbd53ad54cbcc2662bd90a39885c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2eefbd53ad54cbcc2662bd90a39885c5">&#9670;&#160;</a></span>Tower()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2eefbd53ad54cbcc2662bd90a39885c5">&#9670;&#160;</a></span>Tower() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -238,6 +270,31 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="ae388197b793e320230ad920f88d28ac4" name="ae388197b793e320230ad920f88d28ac4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae388197b793e320230ad920f88d28ac4">&#9670;&#160;</a></span>Tower() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Tower::Tower </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tower.html">Tower</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="ae8d2ddd4efce3b80ba02c46994577814" name="ae8d2ddd4efce3b80ba02c46994577814"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae8d2ddd4efce3b80ba02c46994577814">&#9670;&#160;</a></span>applyAttack()</h2>
@@ -266,7 +323,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="class_basic_tower.html#a5298a76f3343e9f422332df183281918">BasicTower</a>, <a class="el" href="class_slow_tower.html#ab9c76dc580ab509112c5e862d059893a">SlowTower</a>, and <a class="el" href="class_splash_tower.html#ac8a83e4a47642d2cd88a7bfabe9eeef7">SplashTower</a>.</p>
+<p>Implemented in <a class="el" href="class_basic_tower.html#a5298a76f3343e9f422332df183281918">BasicTower</a>, <a class="el" href="class_burning_decorator.html#a0458a2dac926d0c124b58a1a9ba942d7">BurningDecorator</a>, <a class="el" href="class_freezing_decorator.html#a2b2662c849ab9d8b282922cd9ec170b7">FreezingDecorator</a>, <a class="el" href="class_level_up_decorator.html#a93dae0be912092d155790ecd26b79c19">LevelUpDecorator</a>, <a class="el" href="class_slow_tower.html#ab9c76dc580ab509112c5e862d059893a">SlowTower</a>, <a class="el" href="class_splash_decorator.html#ac7ff02f089eb123cbeeec0c8d5b38e75">SplashDecorator</a>, <a class="el" href="class_splash_tower.html#ac8a83e4a47642d2cd88a7bfabe9eeef7">SplashTower</a>, and <a class="el" href="class_tower_decorator.html#a0ee4e9d5b781e0ebabb9189fe94347db">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -275,6 +332,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getColumn </td>
@@ -283,7 +343,41 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a7caee92623ea05a67d522ae22c83c971">TowerDecorator</a>.</p>
+
+</div>
+</div>
+<a id="ac10fa594c2ab1560797f2b5f968fc690" name="ac10fa594c2ab1560797f2b5f968fc690"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac10fa594c2ab1560797f2b5f968fc690">&#9670;&#160;</a></span>getCooldown()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double Tower::getCooldown </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#acff5503eaed7cde207e8f687e051dcee">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -292,6 +386,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getCost </td>
@@ -300,7 +397,14 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#ac37c1e35e3f72ff1c959e1c510197fe0">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -309,6 +413,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getDamage </td>
@@ -317,7 +424,14 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_level_up_decorator.html#a4d70023d701ebffdc3ee2e71c5ffa1d8">LevelUpDecorator</a>, and <a class="el" href="class_tower_decorator.html#a7868c7f1fca1e321f8ad01f23b28507d">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -326,6 +440,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">double Tower::getFireRate </td>
@@ -334,7 +451,14 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_level_up_decorator.html#a1fadce5b4f54771c140d673b479be94e">LevelUpDecorator</a>, and <a class="el" href="class_tower_decorator.html#a3d353bc468d5fc58880073448f278354">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -343,6 +467,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getLevel </td>
@@ -351,7 +478,14 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_level_up_decorator.html#a561d9d0b5f6b35497794bd4ad6359b9f">LevelUpDecorator</a>, and <a class="el" href="class_tower_decorator.html#a1f618e915d21e7eb70f2f4b6006a7017">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -360,6 +494,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getMaxLevel </td>
@@ -368,9 +505,16 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Highest level this tower can reach. </p>
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a4f8c5212ee37c84ee1bc06ebc729ad56">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -397,7 +541,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="class_basic_tower.html#a012181735b50bb1936f9986b298e039a">BasicTower</a>, <a class="el" href="class_slow_tower.html#af18705bc19505489f2448a128a55b600">SlowTower</a>, and <a class="el" href="class_splash_tower.html#a775dca7cfc38ec311beed5ed8380f333">SplashTower</a>.</p>
+<p>Implemented in <a class="el" href="class_basic_tower.html#a012181735b50bb1936f9986b298e039a">BasicTower</a>, <a class="el" href="class_level_up_decorator.html#a746b5ffbfe4278a589130bffbf7022a6">LevelUpDecorator</a>, <a class="el" href="class_slow_tower.html#af18705bc19505489f2448a128a55b600">SlowTower</a>, <a class="el" href="class_splash_tower.html#a775dca7cfc38ec311beed5ed8380f333">SplashTower</a>, and <a class="el" href="class_tower_decorator.html#a1c6399b77041d5d85b614c2028aaa4b9">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -406,6 +550,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">double Tower::getRange </td>
@@ -414,7 +561,14 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_level_up_decorator.html#a91c5806391683c2177405463ca2a3baf">LevelUpDecorator</a>, and <a class="el" href="class_tower_decorator.html#a056dbc058721dee9f9004b79bbd5ebed">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -423,6 +577,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getRefundValue </td>
@@ -431,7 +588,14 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_level_up_decorator.html#a7962d1ecbd6201025c4f05a5a9289318">LevelUpDecorator</a>, and <a class="el" href="class_tower_decorator.html#a29205225fa69c30bcf6252e0ac539eb5">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -440,6 +604,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getRow </td>
@@ -448,7 +615,43 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a35660d36ed1c64400c9222953c352db3">TowerDecorator</a>.</p>
+
+</div>
+</div>
+<a id="a733315f0069c822d6cb95329b9e79091" name="a733315f0069c822d6cb95329b9e79091"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a733315f0069c822d6cb95329b9e79091">&#9670;&#160;</a></span>getTargetingStrategy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="class_targeting_strategy.html">TargetingStrategy</a> &amp; Tower::getTargetingStrategy </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The targeting strategy used now (never null). A decorated tower returns the strategy of the tower it wraps. </p>
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a1674649d1831e7031475c0661be1bc33">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -457,6 +660,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::getUpgradeCost </td>
@@ -465,9 +671,16 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Upgrade cost for the current level, or 0 if the tower cannot be upgraded now. </p>
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#ad6bb41b9673e42e09643beb1299ceb77">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -476,6 +689,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool Tower::isInRange </td>
@@ -488,7 +704,14 @@ Protected Attributes</h2></td></tr>
           <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>targetColumn</em></span>&#160;) const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#ac7ce1cae1fc2d3512453d9726593024f">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -497,6 +720,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool Tower::isPurchased </td>
@@ -505,7 +731,14 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a80ddf7a36b078bfbe1b2e7f8530137ba">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -514,6 +747,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool Tower::isSold </td>
@@ -522,29 +758,19 @@ Protected Attributes</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="ac15362bcc37e1246edf4bca5c7057667" name="ac15362bcc37e1246edf4bca5c7057667"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac15362bcc37e1246edf4bca5c7057667">&#9670;&#160;</a></span>purchase()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Tower::purchase </td>
-          <td>(</td>
-          <td class="paramtype">int &amp;</td>          <td class="paramname"><span class="paramname"><em>coins</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#abcc5aaba8db2ae1742f048db6dda5627">TowerDecorator</a>.</p>
 
 </div>
 </div>
-<a id="aa3e2deed7e717e09b3140937451a218b" name="aa3e2deed7e717e09b3140937451a218b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa3e2deed7e717e09b3140937451a218b">&#9670;&#160;</a></span>selectTarget()</h2>
+<a id="a8154eb57c7ae84d5e69a719ababbbfb5" name="a8154eb57c7ae84d5e69a719ababbbfb5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8154eb57c7ae84d5e69a719ababbbfb5">&#9670;&#160;</a></span>moveTo()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -553,18 +779,162 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
+          <td class="memname">bool Tower::moveTo </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>newRow</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>newColumn</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Moves the tower to another cell (for example after dragging it on the map). False if the tower is sold. The game checks that the new cell is a scenery cell (<a class="el" href="class_map.html#ad036c2820400553ea44221382544e48c">Map::isSceneryCell</a>), the tower only stores it. </p>
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#ad6d7cc18eff0c3e9993482e6974680a5">TowerDecorator</a>.</p>
+
+</div>
+</div>
+<a id="ac87c6f3a789bec4dc588440aabbb855f" name="ac87c6f3a789bec4dc588440aabbb855f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac87c6f3a789bec4dc588440aabbb855f">&#9670;&#160;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_tower.html">Tower</a> &amp; Tower::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tower.html">Tower</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a75abf77123d9e8e22602ad19c69e07b9" name="a75abf77123d9e8e22602ad19c69e07b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75abf77123d9e8e22602ad19c69e07b9">&#9670;&#160;</a></span>performUpdate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Tower::performUpdate </td>
+          <td>(</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>deltaTime</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>critters</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_tower.html">Tower</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>attacker</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_burning_decorator.html#ae822eb2662cffcf3f7fba2846977004f">BurningDecorator</a>, and <a class="el" href="class_tower_decorator.html#ae77e47957047b3bf1b1d8bfc4cc5f5a8">TowerDecorator</a>.</p>
+
+</div>
+</div>
+<a id="ac15362bcc37e1246edf4bca5c7057667" name="ac15362bcc37e1246edf4bca5c7057667"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac15362bcc37e1246edf4bca5c7057667">&#9670;&#160;</a></span>purchase()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Tower::purchase </td>
+          <td>(</td>
+          <td class="paramtype">int &amp;</td>          <td class="paramname"><span class="paramname"><em>coins</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a402f0b24268eab557bc5c0a0696fa7ca">TowerDecorator</a>.</p>
+
+</div>
+</div>
+<a id="aa3e2deed7e717e09b3140937451a218b" name="aa3e2deed7e717e09b3140937451a218b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3e2deed7e717e09b3140937451a218b">&#9670;&#160;</a></span>selectTarget()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
           <td class="memname"><a class="el" href="class_critter.html">Critter</a> * Tower::selectTarget </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>critters</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
+</div><div class="memdoc">
+<p>The critter this tower would shoot now: the critters are filtered (non-null, alive, in range) and the targeting strategy chooses among them. nullptr if none can be shot. Used by <a class="el" href="#af991d5f4db2b1d74714a566b719c483a">update()</a> and by the GUI to preview the target. </p>
+
+</div>
+</div>
+<a id="af591d5c35247cda44d1ea134736f1f0e" name="af591d5c35247cda44d1ea134736f1f0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af591d5c35247cda44d1ea134736f1f0e">&#9670;&#160;</a></span>selectTargetFor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_critter.html">Critter</a> * Tower::selectTargetFor </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>critters</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_tower.html">Tower</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rangeOwner</em></span>&#160;) const</td>
+        </tr>
+      </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+<span class="mlabels"><span class="mlabel protected">protected</span><span class="mlabel virtual">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a4308b9041b6194d5a131128eeedb888d">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -573,6 +943,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int Tower::sell </td>
@@ -581,7 +954,42 @@ Protected Attributes</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a8b40d1f8eeb06c960398c078fc9e10de">TowerDecorator</a>.</p>
+
+</div>
+</div>
+<a id="aef67059f3a6434f908b485bdf2fbfb4d" name="aef67059f3a6434f908b485bdf2fbfb4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef67059f3a6434f908b485bdf2fbfb4d">&#9670;&#160;</a></span>setTargetingStrategy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Tower::setTargetingStrategy </td>
+          <td>(</td>
+          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="class_targeting_strategy.html">TargetingStrategy</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>strategy</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Strategy pattern: replaces the targeting strategy used for every following shot and notifies the observers. Passing nullptr restores the default <a class="el" href="class_nearest_to_tower_strategy.html">NearestToTowerStrategy</a>. </p>
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a7d94d9334fb78a9ea37c1af1736fb6a7">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -590,6 +998,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool Tower::update </td>
@@ -602,7 +1013,14 @@ Protected Attributes</h2></td></tr>
           <td class="paramtype">const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>critters</em></span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_tower_decorator.html#a66cea9b7f30f53a7f82e8c0288ec3ae8">TowerDecorator</a>.</p>
 
 </div>
 </div>
@@ -636,6 +1054,9 @@ Protected Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool Tower::upgrade </td>
@@ -644,6 +1065,36 @@ Protected Attributes</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="class_level_up_decorator.html#a7f8aba1fcf0750cd0c9a5bb15013e493">LevelUpDecorator</a>, and <a class="el" href="class_tower_decorator.html#a057b8a5c676d47ccd3572b26efb7c977">TowerDecorator</a>.</p>
+
+</div>
+</div>
+<a name="doc-related-members" id="doc-related-members"></a><h2 id="header-doc-related-members" class="groupheader">Friends And Related Symbol Documentation</h2>
+<a id="a519851697fe58c3dd77ed0c736176993" name="a519851697fe58c3dd77ed0c736176993"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a519851697fe58c3dd77ed0c736176993">&#9670;&#160;</a></span>TowerDecorator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="class_tower_decorator.html">TowerDecorator</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel friend">friend</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
@@ -902,6 +1353,28 @@ Protected Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">bool Tower::sold</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a780aeb427d29422a350a48812559cc1d" name="a780aeb427d29422a350a48812559cc1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a780aeb427d29422a350a48812559cc1d">&#9670;&#160;</a></span>targetingStrategy</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt;<a class="el" href="class_targeting_strategy.html">TargetingStrategy</a>&gt; Tower::targetingStrategy</td>
         </tr>
       </table>
   </td>

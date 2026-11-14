@@ -1,3 +1,5 @@
+// Part 3 (critters): one critter. It finds the shortest path from the entry to the exit, walks it cell by cell,
+// can be damaged and slowed, and pays a reward when killed or steals coins when it escapes.
 #include "Critter.h"
 #include "Map.h"
 
@@ -102,6 +104,7 @@ bool Critter::findPath(const Map& map) {
     return true;
 }
 
+// puts a waiting critter on the entry cell. Refused if it is already out, or if the map has no path to the exit.
 bool Critter::spawn(const Map& map) {
     if (state != CritterState::WAITING) {
         return false;
@@ -118,6 +121,7 @@ bool Critter::spawn(const Map& map) {
     return true;
 }
 
+// the cell the critter walks into next (the exit cell once it is at the end of its path)
 std::pair<int, int> Critter::chooseNextCell() const {
     if (path.empty()) {
         return std::make_pair(-1, -1);
@@ -172,6 +176,7 @@ void Critter::update(double deltaTime, const std::function<bool(int, int)>& isOc
     }
 }
 
+// removes hit points; returns true only for the hit that kills the critter
 bool Critter::takeDamage(int amount) {
     if (state != CritterState::ACTIVE || amount <= 0) {
         return false;
@@ -190,6 +195,7 @@ bool Critter::takeDamage(int amount) {
     return false;
 }
 
+// the critter keeps 'factor' of its speed. The strongest slow wins, and the slow lasts at least 'duration' seconds.
 void Critter::applySlow(double factor, double duration) {
     if (state != CritterState::ACTIVE || factor <= 0.0 || factor >= 1.0 || duration <= 0.0) {
         return;
@@ -202,6 +208,7 @@ void Critter::applySlow(double factor, double duration) {
     notify();
 }
 
+// the reward of a dead critter is paid once, the penalty of an escaped critter is taken once
 int Critter::claimReward() {
     if (state != CritterState::DEAD || rewardClaimed) {
         return 0;
@@ -219,6 +226,8 @@ int Critter::claimPenalty() {
     penaltyClaimed = true;
     return strength;
 }
+
+// ---- getters ----
 
 int Critter::getRow() const {
     return path.empty() ? -1 : path[pathIndex].first;

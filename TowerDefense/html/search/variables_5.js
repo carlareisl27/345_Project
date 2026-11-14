@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['maxlevel_0',['maxLevel',['../class_tower.html#a0f815f39811f167bf626996b6912b462',1,'Tower']]]
+  ['investments_0',['investments',['../class_tower.html#a48434fc6d095252d8882e4082f2f091c',1,'Tower']]]
 ];

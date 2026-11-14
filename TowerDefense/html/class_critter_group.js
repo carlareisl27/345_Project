@@ -1,6 +1,7 @@
 var class_critter_group =
 [
     [ "CritterGroup", "class_critter_group.html#a10570ad79fc1c745740b5f8af945d82f", null ],
+    [ "addCritter", "class_critter_group.html#a74c7d3c98930615a3c97e196cce7b52c", null ],
     [ "getActiveCritters", "class_critter_group.html#ad8b75fce49f2513ac2a4d9f778362cbe", null ],
     [ "getCoinsEarned", "class_critter_group.html#a69400c99ab602fdf655dd3a5abe77fd3", null ],
     [ "getCoinsStolen", "class_critter_group.html#aabcd786f31ffba1d162d00651e582f80", null ],
@@ -13,5 +14,6 @@ var class_critter_group =
     [ "getTotalHitPoints", "class_critter_group.html#adec0ea77dc1f2df3dc917f378970402b", null ],
     [ "getWaveNumber", "class_critter_group.html#a3156fa506e2da09469bf8bb8a3bd99fc", null ],
     [ "isFinished", "class_critter_group.html#adae515e0959fd8c828fdfc82d705af52", null ],
+    [ "removeCritter", "class_critter_group.html#a9ab5de873a7e6957b86fd7ad566d59e6", null ],
     [ "update", "class_critter_group.html#a75045a4b93ed97cf720e7cc74cdce452", null ]
 ];

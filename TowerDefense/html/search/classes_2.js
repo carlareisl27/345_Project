@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['map_0',['Map',['../class_map.html',1,'']]]
+  ['freezingdecorator_0',['FreezingDecorator',['../class_freezing_decorator.html',1,'']]]
 ];

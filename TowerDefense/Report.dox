@@ -12,6 +12,7 @@ The project is a tower defense game made of three parts that work together, plus
 | 4. Graphical driver | `Gui/` | WinGui.cpp | Win32 editor and game view that draws and forwards input without changing the rules. |
 | Observers | `Observer.h`, `Towers/`, `Map/`, `Critters/` | Observer, Observable, TowerObserver, MapObserver, CritterObserver, CritterGroupObserver | Observer pattern: Tower, Map, Critter and CritterGroup are observable, and each view is re-displayed every time its subject changes (see \ref design_observer). |
 
+| Assignment 3 patterns | `Towers/`, `Critters/` | TargetingStrategy (+4 strategies), CritterFactory, StandardCritterFactory, TowerDecorator (+4 decorators) | Strategy: swappable tower targeting. Factory: wave creation. Decorator: tower upgrades added during play (see \ref design_strategy, \ref design_factory, \ref design_decorator). |
 Every part has its own driver and test program, and `GameDriver.cpp` plays several waves with the three parts together.
 Build and run instructions are in `README.md`.
 
@@ -56,6 +57,28 @@ Critters
  -# A critter that reaches the exit steals coins from the player according to its strength.
  -# A critter that reaches the exit also costs the player one life. The player starts with 10 lives and the game is over
     (GAME OVER screen, then restart or go back to the editor) when no lives are left.
+
+Assignment 3 (design patterns)
+ -# **Targeting.** A tower first keeps the critters that are alive and inside its range, then chooses one of them with its
+    targeting option. The four options are the ones of Bloons TD (see
+    <a href="https://www.bloonswiki.com/Targeting_option">Blooncyclopedia: Targeting option</a>):
+    *Close* = nearest critter to the tower (the default), *First* = nearest critter to the exit (the one that walked the most path
+    cells), *Strong* = most hit points left, *Weak* = fewest hit points left. On a tie the first critter found is kept.
+    The option can be changed at any time during play.
+ -# **Waves.** Every wave is made by a wave factory from the wave number N (waves destroyed so far + 1): 3 melee and 3 caster
+    critters, N/3 cannon critters and N/10 super critters, all of level N, released every 0.8 s x max(1 - 0.04 (N - 1), 0.4).
+    Later waves are larger, stronger and denser, as in the Bloons TD rounds and the League of Legends minion waves cited above.
+ -# **Upgrades during play.** A tower is upgraded by adding upgrades to it while the game runs, and they can be combined:
+    - *Level up*: the normal way to go up a level (1 to 3). It costs `cost x current level` (100 then 200 for a basic tower),
+      gives damage and range x1.2 (two level-ups give x1.44) and fire rate x1.1, and half of its price is added to the refund.
+    - *Splash*: the critters within 1.5 cells of the target also take half of the tower's damage.
+    - *Burning*: the target keeps taking 20% of the hit 3 more times, once per second. A new hit restarts the burn, a critter
+      never burns twice at the same time.
+    - *Freezing*: the target is slowed (half speed for 2 s by default). A new hit restarts the slow, it does not add up.
+    Splash (150 coins), Burning (125) and Freezing (100) can each be bought once per tower, at any level. Their price is not
+    refunded when the tower is sold. In the GUI the player buys every upgrade from the selected-tower panel. In the integrated
+    console game (`GameDriver.cpp`) the towers level up between waves, and a tower at its maximum level buys one special upgrade:
+    the basic tower gets Burning, the splash tower Freezing, the slow tower Splash.
 
 \section design Design
 
@@ -110,8 +133,9 @@ the base class and each type only provides its own `applyAttack` and `getName`. 
 | SplashTower | 150 | 30 | 2.0 | 0.5 | damages every critter within 1.5 cells of the target |
 | SlowTower   | 125 | 5  | 3.0 | 1.0 | small damage and halves the target's speed for 2 s |
 
- - **Levels:** maximum level 3. Going up one level costs `cost x current level`, and gives +25% damage (rounded up), +0.5 range and
-   +10% fire rate.
+ - **Levels:** maximum level 3. Going up one level costs `cost x current level`. In Assignment 1 this was `Tower::upgrade`
+   (+25% damage rounded up, +0.5 range, +10% fire rate); it is kept for the Assignment 1 and observer tests and drivers, but the
+   game and the GUI now level towers up with the Decorator pattern (see \ref design_decorator).
  - **Refund:** half of all the coins invested (purchase plus upgrades), available at any time with `getRefundValue`.
  - **Targeting:** among the alive critters inside the range, the one closest to the tower is selected.
  - **Cooldown:** after a shot the tower waits `1 / fireRate` seconds. A tower that is not bought, or already sold, never shoots.
@@ -223,6 +247,78 @@ Tower, Map or Critter.
  - `critter_observer_driver`: plugs a CritterObserver to a critter that spawns, walks, is hit, slowed and killed; then plugs a
    CritterGroupObserver to the wave 2 group and adds and removes critters (including a refused removal and a critter already on the map).
 
+\subsection design_strategy Strategy pattern: tower targeting (Assignment 3, Part 1)
+
+| Role | Class |
+|------|-------|
+| Strategy interface | `TargetingStrategy` (one pure virtual method: `selectTarget(candidates)`) |
+| Concrete strategies | `NearestToTowerStrategy` (default), `NearestToExitStrategy`, `StrongestCritterStrategy`, `WeakestCritterStrategy` |
+| Context | `Tower`, which owns a `std::unique_ptr<TargetingStrategy>` |
+
+ - `Tower::selectTarget` only builds the list of candidates (non-null, alive, in range) and hands it to the strategy, so the
+   choice of target exists in exactly one place: the strategy. The old hard-coded "closest critter" loop was moved into
+   `NearestToTowerStrategy`, so the default behaviour of every tower is unchanged.
+ - `Tower::setTargetingStrategy` swaps the strategy at run time and calls `notify()` (the Observer views refresh).
+   Passing `nullptr` restores the default.
+ - The strategies only see critters, never the tower's internals. `NearestToTowerStrategy` keeps a pointer to its tower and
+   reads `getRow()`/`getColumn()` on every call, so it follows the tower when it is moved.
+ - The GUI preview of the next shot (`predictTarget`) now asks `tower.selectTarget`, so it always matches the tower's strategy.
+
+\subsection design_factory Factory pattern: critter waves (Assignment 3, Part 2)
+
+| Role | Class |
+|------|-------|
+| Creator interface | `CritterFactory` (`createGroup(waveNumber, map)`, returns a `CritterGroup`) |
+| Concrete creator | `StandardCritterFactory` |
+| Product | `CritterGroup` (the critters of one wave) |
+
+ - The game (`GameDriver.cpp`, `Gui/WinGui.cpp`) only asks a `CritterFactory` for wave N. How many critters of which type and
+   level, and how fast they are released, is the factory's business. Another difficulty curve (an easy mode, an endless mode)
+   would be a new subclass, without touching the game loop.
+ - `StandardCritterFactory` holds a `CritterGroupGenerator` and delegates to it, so the composition rules written for
+   Assignment 1 stay in one place; the factory adds the common interface. `critter_factory_tests` checks that both produce
+   identical waves for waves 1 to 30.
+ - Wave numbers below 1 and invalid maps are refused with `std::invalid_argument`.
+
+\subsection design_decorator Decorator pattern: tower upgrades (Assignment 3, Part 3)
+
+| Role | Class |
+|------|-------|
+| Component | `Tower` (public operations made `virtual`) |
+| Concrete components | `BasicTower`, `SplashTower`, `SlowTower` |
+| Decorator | `TowerDecorator`: is a `Tower`, owns the wrapped `Tower*` and forwards every call to it |
+| Concrete decorators | `LevelUpDecorator`, `SplashDecorator`, `BurningDecorator`, `FreezingDecorator` |
+
+ - A decorated tower is still a `Tower`, so it goes in the same `std::vector<std::unique_ptr<Tower>>` as the others and the game
+   code does not change: `tower.reset(new BurningDecorator(tower.release()));`. Decorators stack in any order and number.
+ - **How a shot goes through the chain.** The innermost tower keeps the state (cooldown, purchased, level). When the outermost
+   decorator is updated, it calls the protected `performUpdate(deltaTime, critters, attacker)` down the chain with itself as the
+   attacker. The innermost tower checks its cooldown, selects the target (with its strategy, but using the attacker's range, so a
+   Level up also widens the targeting) and calls `attacker.applyAttack(...)`. Each decorator's `applyAttack` first runs the
+   wrapped attack, then adds its own effect. `TowerDecorator` is a friend of `Tower` only so it can forward these protected calls.
+ - **Level up is the upgrade.** Each level bought wraps the tower in one more `LevelUpDecorator`, which overrides:
+   `getLevel` (wrapped level + 1, so the "Lv2" in the name and the level always agree), `getDamage`/`getRange` (x1.2),
+   `getFireRate` (x1.1, and the cooldown uses the attacker's fire rate so it really shoots faster) and `getRefundValue`
+   (wrapped refund + half of the price paid, which the decorator stores). On each hit it adds the extra damage of its level to the
+   target. `TowerDecorator::getUpgradeCost` computes the next price from the decorated level (`getCost() x getLevel()`, 0 at the
+   maximum level), and `TowerDecorator::sell` pays the decorated refund. `LevelUpDecorator::upgrade` always returns false, so the
+   Assignment 1 `Tower::upgrade` can never run under it and count a level twice.
+ - **Buying upgrades.** `TowerUpgrades.h` holds the helpers used by the game and the GUI: `levelUp(tower, coins)` checks that the
+   tower is bought, not sold, below its maximum level and affordable, takes the coins, then does
+   `tower.reset(new LevelUpDecorator(tower.release(), cost))`. `addSplash`, `addBurning` and `addFreezing` do the same with a fixed
+   price, once per tower. `baseTower` and `findDecorator<D>` walk the chain (the GUI uses them for the tower's color and effects).
+ - The targeting strategy lives in the innermost tower, and `getTargetingStrategy` is forwarded, so a strategy chosen before an
+   upgrade is kept after it.
+ - `BurningDecorator` keeps one burn per critter (damage per tick, ticks left, time since the last tick) and advances the burns
+   every time the chain is updated, for the critters in the list passed to the update only, so a critter that left the game
+   (dead, escaped, or a finished wave) is never touched through a stale pointer.
+ - Names describe the chain: `Basic Tower Lv2 +Splash +Freezing +Burning`.
+ - Mutating calls on a decorator (`purchase`, `upgrade`, `sell`, `moveTo`, `update`, `setTargetingStrategy`) call `notify()` on
+   the decorator, so observers attached to it stay up to date.
+ - Ownership: the decorator deletes the tower it wraps, so deleting the outermost object frees the whole chain
+   (checked in `tower_decorator_tests`, and the test programs run clean under AddressSanitizer).
+ - Towers are no longer copyable (they own their strategy); the game already stored them in `std::unique_ptr`.
+
 \subsection design_choices Other design choices
 
  - No inheritance for critters: the types only differ in numbers, so one class with a `CritterType` is enough.
@@ -252,15 +348,30 @@ Each part has a test program that prints PASS or FAIL for every check and return
 | `tower_tests` | 24 | Buying, upgrading to the maximum level, refund, selling, range, closest target, cooldown, splash radius, slowing, kills. |
 | `observer_tests` | 63 | Observable base (attach twice, detach, copies, assignment, self-detach, subject destroyed), and for each of Tower, Map, Critter and CritterGroup: every change re-displays the view, refused or unchanged actions do not, what the view shows, tower placement rules on the map, adding and removing critters. |
 | `critter_tests` | 60 | Stats and reward proportional to the level, damage and death, movement and shortest path with a dead end, slow, wave composition and difficulty from wave 1 to 30, sequential spawning, one critter per cell (waiting behind a blocked cell, queueing behind a slower critter, no spawn on an occupied entry), rewards paid once, coins stolen, coins never below 0. |
+| `tower_strategy_tests` | 25 | Each strategy on a known list (distinct answer for each), empty list, stable tie-breaks, default strategy, swapping and resetting with `nullptr`, filtering of null, dead and out-of-range critters, notification on change, `update` shooting the chosen critter. |
+| `critter_factory_tests` | 19 | Wave 1 = 3 melee + 3 caster, cannon from wave 3, super from wave 10, size formula and monotonic size for waves 1 to 30, levels = wave number, spawn interval formula, same waves as `CritterGroupGenerator`, invalid wave numbers and invalid map. |
+| `tower_decorator_tests` | 76 | Level up once and twice (stats, names), forwarding of every operation and notifications, ownership, range of a decorated tower, names with all labels, splash (including when the target dies), burning ticks, restart and cleanup, freezing and clamping, a fully stacked tower in a real shot, strategies through decorators. `levelUp`: level and name go up, next cost rises and is 0 at the maximum level, refund rises, refused without coins, at the maximum level, on a tower not bought, sold or null; `upgrade()` refused under a level-up decorator. Special upgrade helpers: price taken once, no duplicates, refused without coins. The targeting strategy is kept through upgrades. |
 
 The drivers show the same behavior on screen: `map_driver`, `tower_driver` (buy, upgrade, sell and shoot), `critter_driver`
 (generated waves, critters walking, rewards and stolen coins) and `game_driver` (all parts together over 10 waves).
+The Assignment 3 drivers are `tower_strategy_driver` (one tower, the same four critters, the four strategies in turn),
+`critter_factory_driver` (waves 1, 5 and 10 and the difficulty curve) and `tower_decorator_driver` (each decorator alone, stacked, levels bought with `levelUp()` showing the next cost and the refund,
+then a fully upgraded tower shooting critters step by step); `make patterns` runs the three of them. `game_driver` uses the three
+patterns in a real game.
 \section gui Graphical driver
 
 The Win32 graphical driver is a thin layer on top of the same rules used by the console drivers. It does not change the game logic.
 
  - **Edit mode:** choose Path, Scenery, Entry or Exit, then click or drag on the grid. Rows and columns are chosen separately and can be resized between 3 and 40, so rectangular maps such as 5 x 30 or 10 x 10 are possible. The "Size step" button makes Rows and Cols change by 1, 5 or 10 at a time. Resizing keeps the path cells, the entry and the exit that still fit. The cell size is computed from the map size (the biggest square cell that fits the map area), and the labels, tower letters and level dots are only drawn when they fit in the cell. Blank map and Sample map are shortcuts for the current size or for the 7x7 map used in `GameDriver.cpp`.
  - **Play mode:** buy towers on scenery cells, select a tower to see its stats and buttons, start waves, pause or resume the fixed-step simulation, and switch back to the editor when no wave is running.
+ - **Selected tower (Assignment 3):** clicking a tower replaces the shop with its controls (click an empty cell to get the shop back):
+   - *Level up* (price, or MAX): Decorator pattern, calls `levelUp`.
+   - *Target: Nearest / Exit / Strongest / Weakest*: Strategy pattern, each click switches to the next strategy with
+     `setTargetingStrategy`. The current strategy is read back with `getTargetingStrategy`, and the shot preview follows it.
+   - *+Splash*, *+Burning*, *+Freezing* (price, or Owned): Decorator pattern, disabled when already bought or too expensive.
+   - *Sell* (refund).
+   The stats panel shows the decorated name (for example "Basic Tower Lv2 +Burning"), level, damage, range, fire rate, targeting,
+   refund and the effect of each special upgrade. Burning critters get an orange ring, slowed critters a blue one.
  - **Resizing:** the interface is laid out on a fixed 1100 x 720 design area. The window can be resized freely (down to 640 x 440): the
    whole design area is scaled by one factor (the smaller of width / 1100 and height / 720) with a GDI world transform and centered,
    so the map, panel, buttons and texts grow and shrink together and nothing is stretched or cut off. Mouse positions are converted
@@ -270,8 +381,10 @@ The Win32 graphical driver is a thin layer on top of the same rules used by the 
 \section limits Known limitations
 
  - The observer views are console (text) views. The Win32 graphical driver does not use them yet.
- - The graphical interface is only a thin layer. The only additions to the game classes are the read-only accessors needed for drawing: `Critter::getExactPosition`, `Tower::getUpgradeCost` and `Tower::getMaxLevel`.
+ - The graphical interface is only a thin layer. The only additions to the game classes are the read-only accessors needed for drawing: `Critter::getExactPosition`, `Tower::getUpgradeCost`, `Tower::getMaxLevel`, `Tower::getTargetingStrategy` and `TargetingStrategy::getName`.
+ - Observers attached to a tower stay on the object they were attached to: after an upgrade wraps the tower, they are not moved to the new outer decorator (the GUI and `game_driver` do not attach observers).
  - Critters follow one fixed path, there is no reaction to towers.
  - Bloons TD features such as layered bloons or end-of-round cash are not used.
  - Game balance (costs, damage, rewards) has not been tuned beyond making the waves get harder.
+ - The extra damage of a Level up is added to the main target only, even when the wrapped tower is a splash tower.
 */

@@ -1,29 +1,37 @@
+// Part 2 (towers): the Tower base class and the three concrete towers (Basic, Splash, Slow).
+// Every change of state calls notify() for the observers (Observer pattern), and the target is chosen by the
+// tower's TargetingStrategy (Strategy pattern, Assignment 3).
 #include "Tower.h"
 #include "Critter.h"
+#include "NearestToTowerStrategy.h"
 
 #include <cmath>
-#include <limits>
+#include <utility>
 
+// a new tower starts at level 1, not bought yet, ready to shoot, with the nearest-critter strategy
 Tower::Tower(int row, int column, int cost, int damage, double range, double fireRate)
 : row(row),
-  column(column), 
-  cost(cost), 
-  damage(damage), 
-  range(range), 
+  column(column),
+  cost(cost),
+  damage(damage),
+  range(range),
   fireRate(fireRate),
-  level(1), 
-  maxLevel(3), 
-  investments(cost), 
-  cooldown(0.0), 
-  purchased(false), 
-  sold(false){
+  level(1),
+  maxLevel(3),
+  investments(cost),
+  cooldown(0.0),
+  purchased(false),
+  sold(false),
+  targetingStrategy(std::make_unique<NearestToTowerStrategy>(this)) { // default strategy: nearest critter to the tower
 
 }
 
+// the price of the next level grows with the level: cost x current level
 int Tower::updateCost() const{
     return cost*level;
 }
 
+// takes the price if the player can pay for it. A tower can be bought only once.
 bool Tower::purchase(int & coins){
     if(purchased || sold || coins < cost){
         return false;
@@ -36,6 +44,8 @@ bool Tower::purchase(int & coins){
     return true;
 }
 
+// Assignment 1 upgrade, kept for the Assignment 1 and observer tests. During play towers are upgraded with
+// levelUp() (TowerUpgrades.h), which wraps them in a LevelUpDecorator instead.
 bool Tower::upgrade(int & coins){
     if(!purchased || sold || level >= maxLevel){
         return false;
@@ -59,6 +69,7 @@ bool Tower::upgrade(int & coins){
     return true;
 }
 
+// gives back the refund (half of what was invested) and takes the tower off the map
 int Tower::sell(int & coins){
     if(!purchased || sold){
         return 0;
@@ -91,6 +102,7 @@ bool Tower::moveTo(int newRow, int newColumn){
     return true;
 }
 
+// straight-line distance from the tower's cell to the target's cell, compared with the range
 bool Tower::isInRange(int targetRow, int targetColumn) const {
     double rowDiff = targetRow - row;
     double columnDiff = targetColumn - column;
@@ -100,38 +112,38 @@ bool Tower::isInRange(int targetRow, int targetColumn) const {
     return distance <= range;
 }
 
-Critter* Tower::selectTarget(
-    const std::vector<Critter*> & critters) const {
-        Critter* closestCritter = nullptr;
-
-        double shortestDist = std::numeric_limits<double>::max();
-
-        for (Critter* critter : critters){
-            if(critter == nullptr || !critter->isAlive()){
-                continue;
-            }
-
-            int targetRow = critter->getRow();
-            int targetColumn = critter->getColumn();
-
-                if(!isInRange(targetRow, targetColumn)){
-                    continue;
-                }
-
-                double rowDiff = targetRow - row;
-                double columnDiff = targetColumn - column;
-
-                double distance = std::sqrt(rowDiff * rowDiff + columnDiff * columnDiff);
-
-                if(distance < shortestDist){
-                    shortestDist = distance;
-                    closestCritter = critter;
-                }
-    
-        }
-
-        return closestCritter;
+void Tower::setTargetingStrategy(std::unique_ptr<TargetingStrategy> strategy){
+    if(strategy == nullptr){
+        strategy = std::make_unique<NearestToTowerStrategy>(this);
     }
+
+    targetingStrategy = std::move(strategy);
+
+    notify(); // the tower now behaves differently, its views are refreshed
+}
+
+const TargetingStrategy& Tower::getTargetingStrategy() const {
+    return *targetingStrategy;
+}
+
+Critter* Tower::selectTarget(const std::vector<Critter*> & critters) const {
+    return selectTargetFor(critters, *this);
+}
+
+// Strategy pattern: this method only builds the list of candidates, the choice itself is made by the strategy.
+Critter* Tower::selectTargetFor(const std::vector<Critter*> & critters, const Tower& rangeOwner) const {
+    std::vector<Critter*> candidates;
+
+    for (Critter* critter : critters){
+        if(critter != nullptr && critter->isAlive() && rangeOwner.isInRange(critter->getRow(), critter->getColumn())){
+            candidates.push_back(critter);
+        }
+    }
+
+    return targetingStrategy->selectTarget(candidates);
+}
+
+// ---- getters ----
 
 int Tower::getRow() const{
     return row;
@@ -189,6 +201,8 @@ double Tower::getCooldown() const {
     return cooldown;
 }
 
+// ---- concrete towers: cost, damage, range, fire rate ----
+
 BasicTower::BasicTower(int row, int column)
 : Tower(row, column, 100, 20, 3.0, 1.0) {
 }
@@ -227,7 +241,13 @@ const char* SlowTower::getName() const {
     return "Slow Tower";
 }
 
+// one tick of a tower that is not decorated: it is its own attacker
 bool Tower::update(double deltaTime, const std::vector<Critter*> & critters){
+    return performUpdate(deltaTime, critters, *this);
+}
+
+// counts the cooldown down; when it is over, chooses a target in range and shoots it through 'attacker'
+bool Tower::performUpdate(double deltaTime, const std::vector<Critter*> & critters, Tower& attacker){
     if(!purchased || sold){
         return false;
     }
@@ -238,22 +258,25 @@ bool Tower::update(double deltaTime, const std::vector<Critter*> & critters){
     }
     cooldown = 0.0;
 
-    Critter* target = selectTarget(critters);
+    Critter* target = selectTargetFor(critters, attacker);
     if(target == nullptr){
         return false;
     }
 
-    applyAttack(target, critters);
-    cooldown = 1.0 / fireRate;
+    attacker.applyAttack(target, critters); // the tower itself, or the outermost decorator wrapping it
+    cooldown = 1.0 / attacker.getFireRate(); // a LevelUpDecorator shoots faster
 
     notify(); // the tower shot: its cooldown was reset
     return true;
 }
 
+// ---- what one shot of each concrete tower does ----
+
 void BasicTower::applyAttack(Critter* target, const std::vector<Critter*> &){
     target->takeDamage(damage);
 }
 
+// every critter within the splash radius of the target (the target included) takes the full damage
 void SplashTower::applyAttack(Critter* target, const std::vector<Critter*> & critters){
     for(Critter* critter : critters){
         if(critter == nullptr){
@@ -269,6 +292,7 @@ void SplashTower::applyAttack(Critter* target, const std::vector<Critter*> & cri
     }
 }
 
+// small damage, then the target is slowed down
 void SlowTower::applyAttack(Critter* target, const std::vector<Critter*> &){
     target->takeDamage(damage);
     target->applySlow(slowFactor, slowDuration);

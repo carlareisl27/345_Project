@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['main_0',['main',['../_main_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;Main.cpp'],['../_map_tests_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;MapTests.cpp'],['../_tower_driver_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;TowerDriver.cpp'],['../_tower_tests_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;TowerTests.cpp'],['../_critter_driver_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;CritterDriver.cpp'],['../_critter_tests_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;CritterTests.cpp']]],
-  ['map_1',['Map',['../class_map.html#a661f9a7c9cbc1454a064939186fbce14',1,'Map']]]
+  ['levelup_0',['levelUp',['../_tower_upgrades_8cpp.html#ae97b19d5162291fbcdfd1764a66e6c8c',1,'levelUp(std::unique_ptr&lt; Tower &gt; &amp;tower, int &amp;coins):&#160;TowerUpgrades.cpp'],['../_tower_upgrades_8h.html#ae97b19d5162291fbcdfd1764a66e6c8c',1,'levelUp(std::unique_ptr&lt; Tower &gt; &amp;tower, int &amp;coins):&#160;TowerUpgrades.cpp']]],
+  ['levelupdecorator_1',['LevelUpDecorator',['../class_level_up_decorator.html#a0c5cdb37bb9ec23d3fba81b3061a890d',1,'LevelUpDecorator']]],
+  ['loadfromfile_2',['loadFromFile',['../class_map.html#a718d67fbfd1dd629097aeb8eaeb404e6',1,'Map']]]
 ];

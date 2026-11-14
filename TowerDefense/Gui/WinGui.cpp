@@ -6,6 +6,16 @@
 #include "Critter.h"
 #include "CritterGroup.h"
 #include "CritterGroupGenerator.h"
+#include "StandardCritterFactory.h"
+// Assignment 3: targeting strategies (Strategy) and tower upgrades (Decorator) controlled from the selected-tower panel
+#include "NearestToTowerStrategy.h"
+#include "NearestToExitStrategy.h"
+#include "StrongestCritterStrategy.h"
+#include "WeakestCritterStrategy.h"
+#include "TowerUpgrades.h"
+#include "SplashDecorator.h"
+#include "BurningDecorator.h"
+#include "FreezingDecorator.h"
 
 #include <windows.h>
 #include <windowsx.h>
@@ -69,6 +79,7 @@ constexpr int MAP_SLOTS = 3;       // number of map files the player can save to
 constexpr int DEMO_WAVES = 10;
 
 // Colors. One dark navy theme for the whole window; the map keeps natural grass and sand colors.
+constexpr int CORNER_RADIUS = 1; // every rounded rectangle uses this radius
 constexpr COLORREF NO_COLOR = 0xFFFFFFFF; // "no fill" / "no border" for the drawing helpers
 constexpr COLORREF THEME_BACKGROUND = RGB(13, 17, 26);
 constexpr COLORREF THEME_SURFACE = RGB(22, 28, 42);        // panel and map card
@@ -79,9 +90,9 @@ constexpr COLORREF THEME_TEXT = RGB(232, 236, 244);
 constexpr COLORREF THEME_TEXT_MUTED = RGB(146, 157, 180);
 constexpr COLORREF THEME_TEXT_FAINT = RGB(104, 116, 140);
 constexpr COLORREF THEME_TEXT_DISABLED = RGB(80, 92, 116);
-constexpr COLORREF THEME_ACCENT = RGB(88, 140, 255);
+constexpr COLORREF THEME_ACCENT = RGB(255, 138, 36);       // the only accent color (orange)
+constexpr COLORREF THEME_ACCENT_DARK = RGB(204, 98, 14);   // filled accent buttons
 constexpr COLORREF THEME_SUCCESS = RGB(64, 196, 128);
-constexpr COLORREF THEME_SUCCESS_DARK = RGB(36, 140, 92);
 constexpr COLORREF THEME_DANGER = RGB(240, 96, 96);
 constexpr COLORREF THEME_GOLD = RGB(245, 196, 80);
 constexpr COLORREF THEME_BUTTON = RGB(37, 46, 68);
@@ -99,6 +110,7 @@ constexpr COLORREF THEME_TOWER_BASIC = RGB(88, 140, 255);
 constexpr COLORREF THEME_TOWER_SPLASH = RGB(255, 150, 64);
 constexpr COLORREF THEME_TOWER_SLOW = RGB(80, 214, 230);
 constexpr COLORREF THEME_TOWER_BASE = RGB(30, 36, 52);
+constexpr COLORREF THEME_BURNING = RGB(255, 112, 40); // ring around a burning critter
 constexpr COLORREF THEME_TOWER_SHADOW = RGB(44, 92, 54);
 constexpr COLORREF THEME_HEALTH_HIGH = RGB(96, 214, 120);
 
@@ -131,7 +143,7 @@ enum class ShopItem {
 
 enum class ButtonStyle {
     NORMAL,
-    PRIMARY, // the main action (Play, Start wave), drawn in green
+    PRIMARY, // the main action (Play, Start wave), drawn in the accent color
     DANGER,  // Sell, drawn in red
 };
 
@@ -158,7 +170,7 @@ struct ShotEffect {
 
 struct GameState {
     Map map{7, 7};
-    CritterGroupGenerator generator;
+    StandardCritterFactory waveFactory; // Factory pattern: creates the critters of each wave
 
     Mode mode = Mode::EDIT;
     EditTool editTool = EditTool::PATH;
@@ -410,7 +422,8 @@ double towerRange(ShopItem item) {
 
 // one sentence about what a shot of this tower does, shown in the panel when the tower is selected in the shop.
 // The numbers are read from the tower itself so they always match the game rules.
-std::string towerEffectText(const Tower& tower) {
+std::string towerEffectText(const Tower& decorated) {
+    const Tower& tower = baseTower(decorated); // the kind of tower, under any upgrade decorators
     if (const SplashTower* splash = dynamic_cast<const SplashTower*>(&tower)) {
         return "Hits the closest critter in range and every critter within " +
                toStringFixed(splash->getSplashRadius(), 1) + " cells of it.";
@@ -522,33 +535,13 @@ void paintFromMouse(GameState& state, const Layout& layout, POINT mouse) {
     paintCell(state, row, column);
 }
 
+// Strategy pattern: the shot preview asks the tower itself, so it matches the tower's targeting strategy.
 Critter* predictTarget(Tower& tower, const std::vector<Critter*>& critters) {
-    Critter* closest = nullptr;
-    double bestDistance = std::numeric_limits<double>::max();
-
-    for (Critter* critter : critters) {
-        if (critter == nullptr || !critter->isAlive()) {
-            continue;
-        }
-        const int row = critter->getRow();
-        const int column = critter->getColumn();
-        if (!tower.isInRange(row, column)) {
-            continue;
-        }
-
-        const double rowDiff = static_cast<double>(row - tower.getRow());
-        const double columnDiff = static_cast<double>(column - tower.getColumn());
-        const double distance = std::sqrt(rowDiff * rowDiff + columnDiff * columnDiff);
-        if (distance < bestDistance) {
-            bestDistance = distance;
-            closest = critter;
-        }
-    }
-
-    return closest;
+    return tower.selectTarget(critters);
 }
 
-COLORREF towerColor(const Tower& tower) {
+COLORREF towerColor(const Tower& decorated) {
+    const Tower& tower = baseTower(decorated); // upgrades (decorators) keep the color of the tower kind
     if (dynamic_cast<const BasicTower*>(&tower) != nullptr) {
         return THEME_TOWER_BASIC;
     }
@@ -568,7 +561,8 @@ COLORREF shopItemColor(ShopItem item) {
     return THEME_TEXT;
 }
 
-char towerLetter(const Tower& tower) {
+char towerLetter(const Tower& decorated) {
+    const Tower& tower = baseTower(decorated);
     if (dynamic_cast<const BasicTower*>(&tower) != nullptr) {
         return 'B';
     }
@@ -581,7 +575,7 @@ char towerLetter(const Tower& tower) {
 COLORREF critterColor(CritterType type) {
     switch (type) {
         case CritterType::MELEE:  return RGB(236, 239, 244);
-        case CritterType::CASTER: return RGB(178, 112, 240);
+        case CritterType::CASTER: return RGB(255, 120, 168);
         case CritterType::CANNON: return RGB(245, 200, 70);
         case CritterType::SUPER:  return RGB(240, 92, 92);
     }
@@ -764,12 +758,12 @@ void drawButton(HDC hdc, const Button& button, POINT mouse) {
         border = THEME_BUTTON_DISABLED;
         text = THEME_TEXT_DISABLED;
     } else if (button.selected) {
-        fill = hover ? blendColor(THEME_ACCENT, RGB(255, 255, 255), 0.12) : THEME_ACCENT;
-        border = blendColor(THEME_ACCENT, RGB(255, 255, 255), 0.35);
+        fill = hover ? THEME_ACCENT : THEME_ACCENT_DARK;
+        border = THEME_ACCENT;
         text = RGB(255, 255, 255);
     } else if (button.style == ButtonStyle::PRIMARY) {
-        fill = hover ? blendColor(THEME_SUCCESS, RGB(255, 255, 255), 0.12) : THEME_SUCCESS_DARK;
-        border = THEME_SUCCESS;
+        fill = hover ? THEME_ACCENT : THEME_ACCENT_DARK;
+        border = THEME_ACCENT;
         text = RGB(255, 255, 255);
     } else if (button.style == ButtonStyle::DANGER) {
         fill = hover ? RGB(92, 42, 52) : RGB(64, 32, 42);
@@ -777,7 +771,7 @@ void drawButton(HDC hdc, const Button& button, POINT mouse) {
         text = RGB(255, 182, 182);
     }
 
-    drawRoundRect(hdc, button.rect, 7, fill, border);
+    drawRoundRect(hdc, button.rect, CORNER_RADIUS, fill, border);
 
     const bool centered = button.swatch == NO_COLOR && button.badge.empty();
     RECT content = insetRect(button.rect, centered ? 4 : 10, 0);
@@ -793,6 +787,146 @@ void drawButton(HDC hdc, const Button& button, POINT mouse) {
     }
     const UINT align = centered ? DT_CENTER : DT_LEFT;
     drawText(hdc, content, button.label, text, align | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS, g_fontBold);
+}
+
+bool hasSelectedTower(const GameState& state) {
+    return state.selectedTowerIndex >= 0 && state.selectedTowerIndex < static_cast<int>(state.towers.size());
+}
+
+// Strategy pattern: the targeting strategies the player cycles through with the "Target" button, in order.
+const char* const TARGETING_NAMES[] = {"Nearest", "Exit", "Strongest", "Weakest"};
+constexpr int TARGETING_COUNT = 4;
+
+std::unique_ptr<TargetingStrategy> makeTargetingStrategy(int index) {
+    switch (index) {
+        case 1: return std::make_unique<NearestToExitStrategy>();
+        case 2: return std::make_unique<StrongestCritterStrategy>();
+        case 3: return std::make_unique<WeakestCritterStrategy>();
+        default: return nullptr; // Tower::setTargetingStrategy(nullptr) restores NearestToTowerStrategy on the tower itself
+    }
+}
+
+// index in TARGETING_NAMES of the strategy the tower uses now (read back from the tower, so nothing to keep in sync)
+int targetingIndex(const Tower& tower) {
+    const std::string name = tower.getTargetingStrategy().getName();
+    for (int i = 0; i < TARGETING_COUNT; ++i) {
+        if (name == TARGETING_NAMES[i]) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+// SELECTED TOWER section: Level Up, targeting strategy, special upgrades (decorators) and Sell.
+// Every action looks the tower up again by index: an upgrade replaces the unique_ptr's tower with a new decorator.
+template <typename AddHeader, typename AddButton>
+void addSelectedTowerButtons(GameState& state, AddHeader& addHeader, AddButton& addButton) {
+    const Tower& tower = *state.towers[state.selectedTowerIndex];
+    addHeader("SELECTED TOWER");
+
+    // Decorator pattern: Level Up wraps the tower in a LevelUpDecorator
+    const int upgradeCost = tower.getUpgradeCost();
+    Button& upgradeButton = addButton("Level up", upgradeCost > 0 && state.coins >= upgradeCost, false, [&state]() {
+        if (!hasSelectedTower(state)) {
+            return;
+        }
+        std::unique_ptr<Tower>& selected = state.towers[state.selectedTowerIndex];
+        if (levelUp(selected, state.coins)) {
+            setStatus(state, std::string("Now ") + selected->getName() + ".", THEME_SUCCESS);
+        } else if (selected->getLevel() >= selected->getMaxLevel()) {
+            setStatus(state, "Tower already at max level.", THEME_DANGER);
+        } else {
+            setStatus(state, "Not enough coins.", THEME_DANGER);
+        }
+    });
+    upgradeButton.badge = upgradeCost > 0 ? std::to_string(upgradeCost) : "MAX";
+    upgradeButton.badgeColor = upgradeCost > 0 && state.coins < upgradeCost ? THEME_DANGER : THEME_GOLD;
+
+    // Strategy pattern: each click switches the tower to the next targeting strategy
+    const int current = targetingIndex(tower);
+    addButton(std::string("Target: ") + TARGETING_NAMES[current], true, false, [&state]() {
+        if (!hasSelectedTower(state)) {
+            return;
+        }
+        Tower& selected = *state.towers[state.selectedTowerIndex];
+        const int next = (targetingIndex(selected) + 1) % TARGETING_COUNT;
+        selected.setTargetingStrategy(makeTargetingStrategy(next));
+        setStatus(state, std::string("Targeting: ") + TARGETING_NAMES[next] + ".", RGB(255, 255, 255));
+    });
+
+    // Decorator pattern: the special upgrades, each one bought once
+    auto addSpecialButton = [&](const std::string& label, bool owned, bool canBuy, int price,
+                                bool (*buy)(std::unique_ptr<Tower>&, int&)) {
+        Button& button = addButton(label, canBuy, false, [&state, buy, label]() {
+            if (!hasSelectedTower(state)) {
+                return;
+            }
+            std::unique_ptr<Tower>& selected = state.towers[state.selectedTowerIndex];
+            if (buy(selected, state.coins)) {
+                setStatus(state, std::string("Now ") + selected->getName() + ".", THEME_SUCCESS);
+            } else {
+                setStatus(state, "Cannot add " + label + ".", THEME_DANGER);
+            }
+        });
+        button.badge = owned ? "Owned" : std::to_string(price);
+        button.badgeColor = owned ? THEME_SUCCESS : (state.coins >= price ? THEME_GOLD : THEME_DANGER);
+    };
+    addSpecialButton("+Splash", hasDecorator<SplashDecorator>(tower), canAddSplash(tower, state.coins), SPLASH_UPGRADE_COST, addSplash);
+    addSpecialButton("+Burning", hasDecorator<BurningDecorator>(tower), canAddBurning(tower, state.coins), BURNING_UPGRADE_COST, addBurning);
+    addSpecialButton("+Freezing", hasDecorator<FreezingDecorator>(tower), canAddFreezing(tower, state.coins), FREEZING_UPGRADE_COST, addFreezing);
+
+    Button& sellButton = addButton("Sell", true, false, [&state]() {
+        if (!hasSelectedTower(state)) {
+            return;
+        }
+        Tower& selected = *state.towers[state.selectedTowerIndex];
+        const std::string soldName = selected.getName();
+        const int refund = selected.sell(state.coins);
+        if (refund > 0) {
+            state.towers.erase(state.towers.begin() + state.selectedTowerIndex);
+            state.selectedTowerIndex = -1;
+            setStatus(state, "Sold " + soldName + ".", THEME_SUCCESS);
+        }
+    }, ButtonStyle::DANGER);
+    sellButton.badge = "+" + std::to_string(tower.getRefundValue());
+    sellButton.badgeColor = THEME_GOLD;
+}
+
+// WAVES section of the play mode: start the next wave, pause, speed, back to the editor
+template <typename AddHeader, typename AddButton, typename AddButtonAt>
+void addWaveButtons(GameState& state, AddHeader& addHeader, AddButton& addButton, AddButtonAt& addButtonAt) {
+addHeader("WAVES");
+    const int nextWave = state.wavesCompleted + 1;
+    addButton("Start wave " + std::to_string(nextWave), state.currentGroup == nullptr, false, [&state, nextWave]() {
+        if (state.currentGroup == nullptr) {
+            try {
+                state.currentGroup = std::make_unique<CritterGroup>(state.waveFactory.createGroup(nextWave, state.map));
+                state.accumulator = 0.0;
+                setStatus(state, "Wave " + std::to_string(nextWave) + " started.", RGB(255, 255, 255));
+            } catch (const std::exception& error) {
+                setStatus(state, error.what(), THEME_DANGER);
+            }
+        }
+    }, ButtonStyle::PRIMARY, BUTTON_HEIGHT + 4);
+    addButtonAt(0, 2, state.paused ? "Resume" : "Pause", true, state.paused, [&state]() {
+        state.paused = !state.paused;
+        setStatus(state, state.paused ? "Paused." : "Running.", RGB(255, 255, 255));
+    });
+    addButtonAt(1, 2, "Speed " + std::to_string(static_cast<int>(state.speedMultiplier)) + "x", true, false, [&state]() {
+        if (state.speedMultiplier < 1.5) {
+            state.speedMultiplier = 2.0;
+        } else if (state.speedMultiplier < 3.0) {
+            state.speedMultiplier = 4.0;
+        } else {
+            state.speedMultiplier = 1.0;
+        }
+        setStatus(state, "Speed set to " + std::to_string(static_cast<int>(state.speedMultiplier)) + "x.", RGB(255, 255, 255));
+    });
+    addButton("Back to map editor", state.currentGroup == nullptr, false, [&state]() {
+        state.mode = Mode::EDIT;
+        resetGame(state);
+        setStatus(state, "Back to the editor.", RGB(255, 255, 255));
+    });
 }
 
 std::vector<Button> buildButtons(GameState& state) {
@@ -936,6 +1070,11 @@ std::vector<Button> buildButtons(GameState& state) {
             resetGame(state);
             setStatus(state, "Back to the editor.", RGB(255, 255, 255));
         });
+    } else if (hasSelectedTower(state)) {
+        // the selected tower's controls take the place of the shop (click an empty cell to get the shop back)
+        addSelectedTowerButtons(state, addHeader, addButton);
+        y += SECTION_GAP;
+        addWaveButtons(state, addHeader, addButton, addButtonAt);
     } else {
         addHeader("SHOP");
         auto addShopButton = [&](const std::string& name, ShopItem item, int cost) {
@@ -953,75 +1092,7 @@ std::vector<Button> buildButtons(GameState& state) {
         addShopButton("Slow", ShopItem::SLOW, 125);
 
         y += SECTION_GAP;
-        addHeader("WAVES");
-        const int nextWave = state.wavesCompleted + 1;
-        addButton("Start wave " + std::to_string(nextWave), state.currentGroup == nullptr, false, [&state, nextWave]() {
-            if (state.currentGroup == nullptr) {
-                try {
-                    state.currentGroup = std::make_unique<CritterGroup>(state.generator.generate(nextWave, state.map));
-                    state.accumulator = 0.0;
-                    setStatus(state, "Wave " + std::to_string(nextWave) + " started.", RGB(255, 255, 255));
-                } catch (const std::exception& error) {
-                    setStatus(state, error.what(), THEME_DANGER);
-                }
-            }
-        }, ButtonStyle::PRIMARY, BUTTON_HEIGHT + 4);
-        addButtonAt(0, 2, state.paused ? "Resume" : "Pause", true, state.paused, [&state]() {
-            state.paused = !state.paused;
-            setStatus(state, state.paused ? "Paused." : "Running.", RGB(255, 255, 255));
-        });
-        addButtonAt(1, 2, "Speed " + std::to_string(static_cast<int>(state.speedMultiplier)) + "x", true, false, [&state]() {
-            if (state.speedMultiplier < 1.5) {
-                state.speedMultiplier = 2.0;
-            } else if (state.speedMultiplier < 3.0) {
-                state.speedMultiplier = 4.0;
-            } else {
-                state.speedMultiplier = 1.0;
-            }
-            setStatus(state, "Speed set to " + std::to_string(static_cast<int>(state.speedMultiplier)) + "x.", RGB(255, 255, 255));
-        });
-        addButton("Back to map editor", state.currentGroup == nullptr, false, [&state]() {
-            state.mode = Mode::EDIT;
-            resetGame(state);
-            setStatus(state, "Back to the editor.", RGB(255, 255, 255));
-        });
-
-        if (state.selectedTowerIndex >= 0 && state.selectedTowerIndex < static_cast<int>(state.towers.size())) {
-            const Tower& tower = *state.towers[state.selectedTowerIndex];
-            y += SECTION_GAP;
-            addHeader("SELECTED TOWER");
-            const int upgradeCost = tower.getUpgradeCost();
-            Button& upgradeButton = addButton("Upgrade", upgradeCost > 0 && state.coins >= upgradeCost, false, [&state]() {
-                if (state.selectedTowerIndex < 0 || state.selectedTowerIndex >= static_cast<int>(state.towers.size())) {
-                    return;
-                }
-                Tower& selected = *state.towers[state.selectedTowerIndex];
-                if (selected.upgrade(state.coins)) {
-                    setStatus(state, "Tower upgraded.", THEME_SUCCESS);
-                } else if (selected.getLevel() >= selected.getMaxLevel()) {
-                    setStatus(state, "Tower already at max level.", THEME_DANGER);
-                } else {
-                    setStatus(state, "Not enough coins.", THEME_DANGER);
-                }
-            });
-            upgradeButton.badge = upgradeCost > 0 ? std::to_string(upgradeCost) : "MAX";
-            upgradeButton.badgeColor = THEME_GOLD;
-            Button& sellButton = addButton("Sell", true, false, [&state]() {
-                if (state.selectedTowerIndex < 0 || state.selectedTowerIndex >= static_cast<int>(state.towers.size())) {
-                    return;
-                }
-                Tower& selected = *state.towers[state.selectedTowerIndex];
-                const int refund = selected.sell(state.coins);
-                if (refund > 0) {
-                    const std::string soldName = selected.getName();
-                    state.towers.erase(state.towers.begin() + state.selectedTowerIndex);
-                    state.selectedTowerIndex = -1;
-                    setStatus(state, "Sold " + soldName + ".", THEME_SUCCESS);
-                }
-            }, ButtonStyle::DANGER);
-            sellButton.badge = "+" + std::to_string(tower.getRefundValue());
-            sellButton.badgeColor = THEME_GOLD;
-        }
+        addWaveButtons(state, addHeader, addButton, addButtonAt);
     }
 
     return buttons;
@@ -1042,7 +1113,7 @@ RECT cellRect(const Layout& layout, int row, int column) {
 void drawMap(HDC hdc, const GameState& state, const Layout& layout) {
     // card behind the map
     RECT card = makeRect(MAP_AREA_LEFT - 12, MAP_AREA_TOP - 12, MAP_AREA_SIZE + 24, MAP_AREA_SIZE + 24);
-    drawRoundRect(hdc, card, 14, THEME_SURFACE, THEME_SURFACE_BORDER);
+    drawRoundRect(hdc, card, CORNER_RADIUS, THEME_SURFACE, THEME_SURFACE_BORDER);
 
     // one set of brushes for the whole map instead of new ones for every cell (a map can have 1600 cells).
     // Grass cells get a faint grid; path cells have no grid so the path reads as one continuous road.
@@ -1088,7 +1159,7 @@ void drawMap(HDC hdc, const GameState& state, const Layout& layout) {
         const RECT cell = cellRect(layout, position.first, position.second);
         const int inset = std::max(1, static_cast<int>(layout.cellSize * 0.1));
         const COLORREF color = isEntry ? THEME_ENTRY : THEME_EXIT;
-        drawRoundRect(hdc, insetRect(cell, inset, inset), std::max(2, static_cast<int>(layout.cellSize * 0.18)),
+        drawRoundRect(hdc, insetRect(cell, inset, inset), CORNER_RADIUS,
                       color, blendColor(color, RGB(255, 255, 255), 0.35), layout.cellSize >= 24.0 ? 2 : 1);
         if (layout.cellSize >= 40.0) {
             drawText(hdc, cell, isEntry ? "IN" : "OUT", RGB(255, 255, 255), DT_CENTER | DT_VCENTER | DT_SINGLELINE, g_fontBold);
@@ -1101,14 +1172,14 @@ void drawMap(HDC hdc, const GameState& state, const Layout& layout) {
 
     // thin dark frame around the grid
     const RECT grid = makeRect(layout.mapLeft, layout.mapTop, layout.mapWidth + 1, layout.mapHeight + 1);
-    drawRoundRect(hdc, insetRect(grid, -1, -1), 3, NO_COLOR, THEME_MAP_FRAME, 2);
+    drawRoundRect(hdc, insetRect(grid, -1, -1), CORNER_RADIUS, NO_COLOR, THEME_MAP_FRAME, 2);
 
     // in the editor, show which cell the mouse would paint
     if (state.mode == Mode::EDIT) {
         int row = 0;
         int column = 0;
         if (isInsideMapCell(layout, state.mousePos, state.map.getRows(), state.map.getColumns(), row, column)) {
-            drawRoundRect(hdc, cellRect(layout, row, column), 4, NO_COLOR, RGB(255, 255, 255), 2);
+            drawRoundRect(hdc, cellRect(layout, row, column), CORNER_RADIUS, NO_COLOR, RGB(255, 255, 255), 2);
         }
     }
 }
@@ -1126,7 +1197,7 @@ void drawGhost(HDC hdc, const GameState& state, const Layout& layout) {
     const bool allowed = state.map.isSceneryCell(row, column) && !hasTowerAt(state, row, column);
     const COLORREF color = allowed ? THEME_SUCCESS : THEME_DANGER;
 
-    drawRoundRect(hdc, insetRect(cellRect(layout, row, column), 1, 1), 5, NO_COLOR, color, 2);
+    drawRoundRect(hdc, insetRect(cellRect(layout, row, column), 1, 1), CORNER_RADIUS, NO_COLOR, color, 2);
 
     const POINT center = cellCenter(layout, static_cast<double>(row), static_cast<double>(column));
     const int radius = static_cast<int>(std::lround(towerRange(state.shopItem) * layout.cellSize));
@@ -1158,8 +1229,8 @@ void drawTowers(HDC hdc, const GameState& state, const Layout& layout) {
         // shadow, dark base plate with a colored rim, colored turret in the middle
         RECT shadow = body;
         OffsetRect(&shadow, 0, std::max(1, towerSize / 14));
-        drawRoundRect(hdc, shadow, towerSize / 4, THEME_TOWER_SHADOW, NO_COLOR);
-        drawRoundRect(hdc, body, towerSize / 4, THEME_TOWER_BASE, selected ? RGB(255, 255, 255) : color, 2);
+        drawRoundRect(hdc, shadow, CORNER_RADIUS, THEME_TOWER_SHADOW, NO_COLOR);
+        drawRoundRect(hdc, body, CORNER_RADIUS, THEME_TOWER_BASE, selected ? RGB(255, 255, 255) : color, 2);
         const int turret = static_cast<int>(towerSize * 0.32);
         drawEllipse(hdc, circleRect(center, turret), color, blendColor(color, RGB(255, 255, 255), 0.45), 2);
 
@@ -1180,6 +1251,17 @@ void drawTowers(HDC hdc, const GameState& state, const Layout& layout) {
             }
         }
     }
+}
+
+// true if a tower with the Burning upgrade is still burning this critter
+bool isBurningCritter(const GameState& state, const Critter& critter) {
+    for (const auto& tower : state.towers) {
+        const BurningDecorator* burning = findDecorator<BurningDecorator>(*tower);
+        if (burning != nullptr && burning->isBurning(&critter)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void drawCritters(HDC hdc, const GameState& state, const Layout& layout) {
@@ -1211,6 +1293,10 @@ void drawCritters(HDC hdc, const GameState& state, const Layout& layout) {
         if (slowed) {
             drawEllipse(hdc, insetRect(body, -3, -3), NO_COLOR, THEME_TOWER_SLOW, 2);
         }
+        // a critter set on fire by a tower with the Burning upgrade (Decorator pattern) gets an orange ring
+        if (isBurningCritter(state, critter)) {
+            drawEllipse(hdc, insetRect(body, slowed ? -6 : -3, slowed ? -6 : -3), NO_COLOR, THEME_BURNING, 2);
+        }
         drawEllipse(hdc, body, critterColor(critter.getType()), RGB(24, 29, 42), 2);
 
         // gold ring around the critter the player is inspecting
@@ -1231,11 +1317,11 @@ void drawCritters(HDC hdc, const GameState& state, const Layout& layout) {
             : 0.0;
         const COLORREF healthColor = ratio > 0.6 ? THEME_HEALTH_HIGH : (ratio > 0.3 ? THEME_GOLD : THEME_DANGER);
         RECT back{center.x - healthWidth / 2 - 1, body.top - 10, center.x + healthWidth / 2 + 1, body.top - 10 + healthHeight + 2};
-        drawRoundRect(hdc, back, 3, RGB(18, 22, 32), NO_COLOR);
+        drawRoundRect(hdc, back, CORNER_RADIUS, RGB(18, 22, 32), NO_COLOR);
         RECT fill = insetRect(back, 1, 1);
         fill.right = fill.left + static_cast<int>(std::lround((fill.right - fill.left) * ratio));
         if (fill.right > fill.left) {
-            drawRoundRect(hdc, fill, 2, healthColor, NO_COLOR);
+            drawRoundRect(hdc, fill, CORNER_RADIUS, healthColor, NO_COLOR);
         }
     }
 }
@@ -1260,7 +1346,7 @@ void drawShots(HDC hdc, const GameState& state) {
 void drawHeader(HDC hdc, const GameState& state) {
     // logo: a small tower icon on an accent tile
     RECT logo = makeRect(20, 12, 32, 32);
-    drawRoundRect(hdc, logo, 8, THEME_ACCENT, NO_COLOR);
+    drawRoundRect(hdc, logo, CORNER_RADIUS, THEME_ACCENT, NO_COLOR);
     {
         const int l = logo.left;
         const int t = logo.top;
@@ -1272,7 +1358,7 @@ void drawHeader(HDC hdc, const GameState& state) {
         selectPenAndBrush(hdc, RGB(255, 255, 255), NO_COLOR, 1, PS_SOLID, pen, brush, oldPen, oldBrush);
         Polygon(hdc, tower, static_cast<int>(sizeof(tower) / sizeof(tower[0])));
         restorePenAndBrush(hdc, pen, brush, oldPen, oldBrush);
-        drawRoundRect(hdc, makeRect(l + 14, t + 18, 4, 7), 2, THEME_ACCENT, NO_COLOR);
+        drawRoundRect(hdc, makeRect(l + 14, t + 18, 4, 7), CORNER_RADIUS, THEME_ACCENT, NO_COLOR);
     }
 
     drawText(hdc, makeRect(62, 9, 260, 22), "Tower Defense", THEME_TEXT, DT_LEFT | DT_VCENTER | DT_SINGLELINE, g_fontTitle);
@@ -1280,7 +1366,7 @@ void drawHeader(HDC hdc, const GameState& state) {
 
     // status message in a pill, with a colored dot
     const RECT pill = makeRect(MESSAGE_LEFT, MESSAGE_TOP, MESSAGE_WIDTH, MESSAGE_HEIGHT);
-    drawRoundRect(hdc, pill, MESSAGE_HEIGHT / 2, THEME_SURFACE, THEME_SURFACE_BORDER);
+    drawRoundRect(hdc, pill, CORNER_RADIUS, THEME_SURFACE, THEME_SURFACE_BORDER);
     const bool neutral = state.statusColor == RGB(255, 255, 255);
     const COLORREF dotColor = neutral ? THEME_ACCENT : state.statusColor;
     const int cy = (pill.top + pill.bottom) / 2;
@@ -1291,7 +1377,7 @@ void drawHeader(HDC hdc, const GameState& state) {
 
 // one tile of the stats row at the top of the panel: small label above a big value
 void drawStatTile(HDC hdc, const RECT& rect, const std::string& label, const std::string& value, COLORREF valueColor) {
-    drawRoundRect(hdc, rect, 8, THEME_TILE, THEME_SURFACE_BORDER);
+    drawRoundRect(hdc, rect, CORNER_RADIUS, THEME_TILE, THEME_SURFACE_BORDER);
     drawText(hdc, RECT{rect.left + 10, rect.top + 6, rect.right - 6, rect.top + 20}, label, THEME_TEXT_FAINT,
              DT_LEFT | DT_VCENTER | DT_SINGLELINE, g_fontLabel);
     drawText(hdc, RECT{rect.left + 10, rect.top + 20, rect.right - 6, rect.bottom - 4}, value, valueColor,
@@ -1388,13 +1474,13 @@ void drawWaveLog(HDC hdc, const GameState& state) {
 
 void drawPanel(HDC hdc, GameState& state) {
     const RECT panel = makeRect(PANEL_LEFT, PANEL_TOP, PANEL_WIDTH, PANEL_HEIGHT);
-    drawRoundRect(hdc, panel, 14, THEME_SURFACE, THEME_SURFACE_BORDER);
+    drawRoundRect(hdc, panel, CORNER_RADIUS, THEME_SURFACE, THEME_SURFACE_BORDER);
 
     // panel heading: a colored mode pill on the left, a short state on the right
     const bool edit = state.mode == Mode::EDIT;
-    const COLORREF modeColor = edit ? THEME_ACCENT : (state.gameOver ? THEME_DANGER : THEME_SUCCESS);
+    const COLORREF modeColor = state.gameOver ? THEME_DANGER : THEME_ACCENT;
     const RECT modePill = makeRect(PANEL_CONTENT_LEFT, PANEL_TOP + 16, 96, 24);
-    drawRoundRect(hdc, modePill, 12, blendColor(THEME_SURFACE, modeColor, 0.22), modeColor);
+    drawRoundRect(hdc, modePill, CORNER_RADIUS, blendColor(THEME_SURFACE, modeColor, 0.22), modeColor);
     drawText(hdc, modePill, edit ? "EDIT MODE" : "PLAY MODE", blendColor(modeColor, RGB(255, 255, 255), 0.45),
              DT_CENTER | DT_VCENTER | DT_SINGLELINE, g_fontLabel);
 
@@ -1443,7 +1529,7 @@ void drawPanel(HDC hdc, GameState& state) {
         info.section("LEGEND");
         auto legend = [&](COLORREF color, const std::string& name, const std::string& note) {
             const RECT swatch = makeRect(info.x, info.y + 3, 14, 14);
-            drawRoundRect(hdc, swatch, 3, color, blendColor(color, RGB(0, 0, 0), 0.3));
+            drawRoundRect(hdc, swatch, CORNER_RADIUS, color, blendColor(color, RGB(0, 0, 0), 0.3));
             const RECT r{info.x + 22, info.y, info.x + info.width, info.y + INFO_LINE};
             drawText(hdc, r, name, THEME_TEXT, DT_LEFT | DT_VCENTER | DT_SINGLELINE, g_guiFont);
             drawText(hdc, r, note, THEME_TEXT_FAINT, DT_RIGHT | DT_VCENTER | DT_SINGLELINE, g_fontSmall);
@@ -1463,12 +1549,12 @@ void drawPanel(HDC hdc, GameState& state) {
             const CritterGroup& group = *state.currentGroup;
             info.section("WAVE " + std::to_string(group.getWaveNumber()) + " IN PROGRESS");
             const RECT bar = makeRect(info.x, info.y + 4, info.width, 8);
-            drawRoundRect(hdc, bar, 4, THEME_TILE, NO_COLOR);
+            drawRoundRect(hdc, bar, CORNER_RADIUS, THEME_TILE, NO_COLOR);
             const double done = group.getSize() > 0 ? static_cast<double>(group.getKilledCount() + group.getEscapedCount()) / group.getSize() : 0.0;
             RECT barFill = bar;
             barFill.right = bar.left + static_cast<int>(std::lround(info.width * std::clamp(done, 0.0, 1.0)));
             if (barFill.right - barFill.left >= 8) {
-                drawRoundRect(hdc, barFill, 4, THEME_ACCENT, NO_COLOR);
+                drawRoundRect(hdc, barFill, CORNER_RADIUS, THEME_ACCENT, NO_COLOR);
             }
             info.gap(16);
             info.keyValue("Spawned", std::to_string(group.getSpawnedCount()) + " / " + std::to_string(group.getSize()));
@@ -1501,6 +1587,19 @@ void drawPanel(HDC hdc, GameState& state) {
             info.keyValue("Damage", std::to_string(tower.getDamage()));
             info.keyValue("Range", toStringFixed(tower.getRange(), 1));
             info.keyValue("Fire rate", toStringFixed(tower.getFireRate(), 1) + "/s");
+            info.keyValue("Targeting", tower.getTargetingStrategy().getName());
+            info.keyValue("Refund", std::to_string(tower.getRefundValue()), THEME_GOLD);
+            if (const BurningDecorator* burning = findDecorator<BurningDecorator>(tower)) {
+                info.keyValue("Burning", std::to_string(burning->getBurningCount()) + " critters", THEME_DANGER);
+            }
+            if (const FreezingDecorator* freezing = findDecorator<FreezingDecorator>(tower)) {
+                info.keyValue("Freezing", std::to_string(static_cast<int>(std::lround(freezing->getSlowFactor() * 100.0))) + "% speed",
+                              THEME_TOWER_SLOW);
+            }
+            if (const SplashDecorator* splash = findDecorator<SplashDecorator>(tower)) {
+                info.keyValue("Splash", std::to_string(splash->getSplashDamage()) + " in " + toStringFixed(splash->getSplashRadius(), 1),
+                              THEME_TOWER_SPLASH);
+            }
         } else if (state.currentGroup != nullptr && state.selectedCritterIndex >= 0) {
             // stats of the critter the player clicked on
             const Critter& critter = state.currentGroup->getCritters()[state.selectedCritterIndex];
@@ -1545,8 +1644,8 @@ void drawGameOver(HDC hdc, const GameState& state, const Layout& layout) {
     const RECT box = makeRect(centerX - 210, centerY - 80, 420, 160);
     RECT shadow = box;
     OffsetRect(&shadow, 0, 6);
-    drawRoundRect(hdc, shadow, 16, RGB(8, 10, 16), NO_COLOR);
-    drawRoundRect(hdc, box, 16, THEME_SURFACE, THEME_DANGER, 2);
+    drawRoundRect(hdc, shadow, CORNER_RADIUS, RGB(8, 10, 16), NO_COLOR);
+    drawRoundRect(hdc, box, CORNER_RADIUS, THEME_SURFACE, THEME_DANGER, 2);
 
     drawText(hdc, makeRect(box.left, box.top + 18, 420, 52), "GAME OVER", THEME_DANGER, DT_CENTER | DT_VCENTER | DT_SINGLELINE, g_fontHuge);
 
@@ -1748,14 +1847,14 @@ void autoManageDemo(GameState& state) {
     while (upgraded) {
         upgraded = false;
         for (auto& tower : state.towers) {
-            if (tower->upgrade(state.coins)) {
+            if (levelUp(tower, state.coins)) { // Decorator pattern: one more LevelUpDecorator
                 upgraded = true;
             }
         }
     }
 
     try {
-        state.currentGroup = std::make_unique<CritterGroup>(state.generator.generate(state.wavesCompleted + 1, state.map));
+        state.currentGroup = std::make_unique<CritterGroup>(state.waveFactory.createGroup(state.wavesCompleted + 1, state.map));
         state.accumulator = 0.0;
     } catch (const std::exception& error) {
         setStatus(state, error.what(), THEME_DANGER);
@@ -1782,7 +1881,8 @@ void updateSimulation(GameState& state, double frameDelta) {
                     effect.from = cellCenter(computeLayout(state.map), static_cast<double>(tower->getRow()), static_cast<double>(tower->getColumn()));
                     const std::pair<double, double> exact = target->getExactPosition();
                     effect.to = cellCenter(computeLayout(state.map), exact.first, exact.second);
-                    effect.splash = dynamic_cast<SplashTower*>(tower.get()) != nullptr;
+                    effect.splash = dynamic_cast<const SplashTower*>(&baseTower(*tower)) != nullptr
+                                    || hasDecorator<SplashDecorator>(*tower);
                     effect.color = towerColor(*tower);
                     state.shots.push_back(effect);
                 }
@@ -1884,7 +1984,7 @@ void handleMapClick(GameState& state, POINT mouse) {
         if (tower->isPurchased() && !tower->isSold() && tower->getRow() == row && tower->getColumn() == column) {
             state.selectedTowerIndex = index;
             state.selectedCritterIndex = -1;
-            setStatus(state, tower->getName(), RGB(255, 255, 255));
+            setStatus(state, std::string(tower->getName()) + " (click an empty cell for the shop)", RGB(255, 255, 255));
             return;
         }
     }

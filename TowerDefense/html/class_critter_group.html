@@ -113,6 +113,15 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('class_critter_
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="_critter_group_8h_source.html">CritterGroup.h</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for CritterGroup:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="class_critter_group.png" usemap="#CritterGroup_map" alt=""/>
+  <map id="CritterGroup_map" name="CritterGroup_map">
+<area href="class_observable.html" alt="Observable" shape="rect" coords="0,0,82,24"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -122,6 +131,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad8b75fce49f2513ac2a4d9f778362cbe" id="r_ad8b75fce49f2513ac2a4d9f778362cbe"><td class="memItemLeft">std::vector&lt; <a class="el" href="class_critter.html">Critter</a> * &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad8b75fce49f2513ac2a4d9f778362cbe">getActiveCritters</a> ()</td></tr>
 <tr class="memdesc:ad8b75fce49f2513ac2a4d9f778362cbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Critters on the map that are alive: the ones towers can shoot at.  <br /></td></tr>
 <tr class="memitem:a01b148037f8f00faa141a3031b84e989" id="r_a01b148037f8f00faa141a3031b84e989"><td class="memItemLeft">const std::vector&lt; <a class="el" href="class_critter.html">Critter</a> &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a01b148037f8f00faa141a3031b84e989">getCritters</a> () const</td></tr>
+<tr class="memitem:a74c7d3c98930615a3c97e196cce7b52c" id="r_a74c7d3c98930615a3c97e196cce7b52c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a74c7d3c98930615a3c97e196cce7b52c">addCritter</a> (const <a class="el" href="class_critter.html">Critter</a> &amp;critter)</td></tr>
+<tr class="memitem:a9ab5de873a7e6957b86fd7ad566d59e6" id="r_a9ab5de873a7e6957b86fd7ad566d59e6"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a9ab5de873a7e6957b86fd7ad566d59e6">removeCritter</a> (int index)</td></tr>
+<tr class="memdesc:a9ab5de873a7e6957b86fd7ad566d59e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the critter at that position (0 = first critter of the wave). False if the index is out of range.  <br /></td></tr>
 <tr class="memitem:adae515e0959fd8c828fdfc82d705af52" id="r_adae515e0959fd8c828fdfc82d705af52"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adae515e0959fd8c828fdfc82d705af52">isFinished</a> () const</td></tr>
 <tr class="memdesc:adae515e0959fd8c828fdfc82d705af52"><td class="mdescLeft">&#160;</td><td class="mdescRight">True when every critter has spawned and none is left on the map.  <br /></td></tr>
 <tr class="memitem:a3156fa506e2da09469bf8bb8a3bd99fc" id="r_a3156fa506e2da09469bf8bb8a3bd99fc"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a3156fa506e2da09469bf8bb8a3bd99fc">getWaveNumber</a> () const</td></tr>
@@ -134,9 +146,22 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a06dd6cf8ad7ef91c3374933246a46d92" id="r_a06dd6cf8ad7ef91c3374933246a46d92"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a06dd6cf8ad7ef91c3374933246a46d92">getEscapedCount</a> () const</td></tr>
 <tr class="memitem:a69400c99ab602fdf655dd3a5abe77fd3" id="r_a69400c99ab602fdf655dd3a5abe77fd3"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a69400c99ab602fdf655dd3a5abe77fd3">getCoinsEarned</a> () const</td></tr>
 <tr class="memitem:aabcd786f31ffba1d162d00651e582f80" id="r_aabcd786f31ffba1d162d00651e582f80"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#aabcd786f31ffba1d162d00651e582f80">getCoinsStolen</a> () const</td></tr>
+<tr class="inherit_header pub_methods_class_observable"><td colspan="2">Public Member Functions inherited from <a class="el" href="class_observable.html">Observable</a></td></tr>
+<tr class="memitem:ab3559b2daa90b06b123089508b3d193d pub_methods_class_observable" id="r_ab3559b2daa90b06b123089508b3d193d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#ab3559b2daa90b06b123089508b3d193d">Observable</a> ()=default</td></tr>
+<tr class="memitem:a9a6665a6ccc4f4a2b4b6392ec75aa39b pub_methods_class_observable" id="r_a9a6665a6ccc4f4a2b4b6392ec75aa39b"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a9a6665a6ccc4f4a2b4b6392ec75aa39b">Observable</a> (const <a class="el" href="class_observable.html">Observable</a> &amp;)</td></tr>
+<tr class="memitem:ac45601743e09ed03383a15bd71dfadae pub_methods_class_observable" id="r_ac45601743e09ed03383a15bd71dfadae"><td class="memItemLeft"><a class="el" href="class_observable.html">Observable</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#ac45601743e09ed03383a15bd71dfadae">operator=</a> (const <a class="el" href="class_observable.html">Observable</a> &amp;)</td></tr>
+<tr class="memitem:a42f551d4d64ffa48a2ea8d7f0a4e42d4 pub_methods_class_observable" id="r_a42f551d4d64ffa48a2ea8d7f0a4e42d4"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a42f551d4d64ffa48a2ea8d7f0a4e42d4">~Observable</a> ()</td></tr>
+<tr class="memitem:a6efa28f8d9b8e5ab249533f684363a4f pub_methods_class_observable" id="r_a6efa28f8d9b8e5ab249533f684363a4f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a6efa28f8d9b8e5ab249533f684363a4f">attach</a> (<a class="el" href="class_observer.html">Observer</a> *observer)</td></tr>
+<tr class="memitem:a242e67bc26e3934370e863af3c08d1cb pub_methods_class_observable" id="r_a242e67bc26e3934370e863af3c08d1cb"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a242e67bc26e3934370e863af3c08d1cb">detach</a> (<a class="el" href="class_observer.html">Observer</a> *observer)</td></tr>
+<tr class="memitem:afabfe1c5f50b045bfa886f23aabe96c9 pub_methods_class_observable" id="r_afabfe1c5f50b045bfa886f23aabe96c9"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#afabfe1c5f50b045bfa886f23aabe96c9">getObserverCount</a> () const</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-inherited" class="groupheader"><a id="inherited" name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_methods_class_observable"><td colspan="2">Protected Member Functions inherited from <a class="el" href="class_observable.html">Observable</a></td></tr>
+<tr class="memitem:a099bf851e05bb8c1a25e83f2a1389e58 pro_methods_class_observable" id="r_a099bf851e05bb8c1a25e83f2a1389e58"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="class_observable.html#a099bf851e05bb8c1a25e83f2a1389e58">notify</a> ()</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The critters of one wave. Releases them one after the other on the entry, moves them and settles the coins: the reward of every killed critter is added, the coins stolen by every critter that reached the exit are taken. Do not copy the group while towers hold pointers from getActiveCritters. </p>
+<div class="textblock"><p>The critters of one wave. Releases them one after the other on the entry, moves them and settles the coins: the reward of every killed critter is added, the coins stolen by every critter that reached the exit are taken. Do not copy the group while towers hold pointers from getActiveCritters. <a class="el" href="class_critter_group.html">CritterGroup</a> is <a class="el" href="class_observable.html">Observable</a>: adding or removing a critter, and every update in which a critter of the wave spawns, changes cell, loses hit points, dies or escapes, call <a class="el" href="class_observable.html#a099bf851e05bb8c1a25e83f2a1389e58">notify()</a>, so the attached observers (<a class="el" href="class_critter_group_observer.html">CritterGroupObserver</a>) re-display the wave. </p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a10570ad79fc1c745740b5f8af945d82f" name="a10570ad79fc1c745740b5f8af945d82f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a10570ad79fc1c745740b5f8af945d82f">&#9670;&#160;</a></span>CritterGroup()</h2>
@@ -165,6 +190,24 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a74c7d3c98930615a3c97e196cce7b52c" name="a74c7d3c98930615a3c97e196cce7b52c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74c7d3c98930615a3c97e196cce7b52c">&#9670;&#160;</a></span>addCritter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool CritterGroup::addCritter </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_critter.html">Critter</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>critter</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Adds a critter at the end of the wave (it spawns after the others). Its state must be WAITING, otherwise false. Adding or removing critters invalidates the pointers returned by getActiveCritters. </p>
+
+</div>
+</div>
 <a id="ad8b75fce49f2513ac2a4d9f778362cbe" name="ad8b75fce49f2513ac2a4d9f778362cbe"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8b75fce49f2513ac2a4d9f778362cbe">&#9670;&#160;</a></span>getActiveCritters()</h2>
 
@@ -372,6 +415,25 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>True when every critter has spawned and none is left on the map. </p>
+
+</div>
+</div>
+<a id="a9ab5de873a7e6957b86fd7ad566d59e6" name="a9ab5de873a7e6957b86fd7ad566d59e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ab5de873a7e6957b86fd7ad566d59e6">&#9670;&#160;</a></span>removeCritter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool CritterGroup::removeCritter </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>index</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Removes the critter at that position (0 = first critter of the wave). False if the index is out of range. </p>
 
 </div>
 </div>
